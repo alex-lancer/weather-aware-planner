@@ -2,6 +2,33 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Tailwind CSS
+
+Tailwind CSS is installed and configured via PostCSS.
+
+- Config files:
+  - `tailwind.config.js`
+  - `postcss.config.js`
+- Tailwind directives are added to `src/index.css`:
+  ```css
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;
+  ```
+- Content paths are set to `./public/index.html` and `./src/**/*.{js,jsx,ts,tsx}`.
+
+You can now use utility classes in JSX, e.g.:
+
+```tsx
+<div className="min-h-screen bg-slate-50 text-slate-900">Hello</div>
+```
+
+If dependencies are not yet installed, run:
+
+```bash
+npm install
+```
+
 ## Available Scripts
 
 In the project directory, you can run:

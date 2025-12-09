@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import BaseButton from '../../commonComponents/BaseButton';
 
 export default function DashboardTask() {
   const [description, setDescription] = useState<string>('');
@@ -60,7 +61,7 @@ export default function DashboardTask() {
           </div>
         )}
 
-        <button type="submit">Save Task</button>
+        <BaseButton type="submit">Save Task</BaseButton>
       </form>
     </div>
   );

@@ -2,6 +2,8 @@ import { Form, useLoaderData, useNavigation } from "react-router-dom";
 import { LoaderData, Task, DailyWeather, DEFAULT_CITY, DEFAULT_COORDS, Role } from "../types";
 import DayName from "./DayName";
 import RiskBadge from "./RiskBadge";
+import BaseSelect from "../commonComponents/BaseSelect";
+import BaseButton from "../commonComponents/BaseButton";
 
 export default function Planner() {
   const { role, city, coords, days, tasks, degraded } = useLoaderData<LoaderData>();
@@ -26,22 +28,20 @@ export default function Planner() {
             placeholder="City"
             className="flex-1 rounded-lg border px-3 py-2 text-sm dark:bg-neutral-900 dark:border-neutral-700"
           />
-          <select
+          <BaseSelect
             name="role"
             defaultValue={role}
-            className="rounded-lg border px-3 py-2 text-sm dark:bg-neutral-900 dark:border-neutral-700"
           >
             <option value="manager">Manager</option>
             <option value="dispatcher">Dispatcher</option>
             <option value="technician">Technician</option>
-          </select>
-          <button
+          </BaseSelect>
+          <BaseButton
             type="submit"
-            className="rounded-lg bg-blue-600 text-white px-4 py-2 text-sm disabled:opacity-60"
             disabled={isSubmitting}
           >
             {isSubmitting ? "Loading…" : "Apply"}
-          </button>
+          </BaseButton>
         </Form>
         <div className="text-xs text-gray-600 dark:text-gray-400">
           {degraded ? (
