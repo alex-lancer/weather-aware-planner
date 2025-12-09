@@ -37,6 +37,39 @@ export async function geocodeCity(city: string): Promise<{ lat: number; lon: num
   }
 }
 
+/**
+ * Search city suggestions using OpenStreetMap Nominatim.
+ * Returns up to 5 display names. Lightweight: we only need the string; geocoding happens separately.
+ */
+export async function searchCities(query: string): Promise<string[]> {
+  if (!query.trim()) return [];
+  try {
+    const url = new URL("https://nominatim.openstreetmap.org/search");
+    url.searchParams.set("format", "json");
+    url.searchParams.set("addressdetails", "0");
+    url.searchParams.set("limit", "5");
+    url.searchParams.set("q", query);
+    const res = await fetch(url.toString(), {
+      headers: { "Accept-Language": "en", "User-Agent": "waw-app/1.0" },
+    });
+    if (!res.ok) return [];
+    const data = (await res.json()) as Array<{ display_name?: string }>;
+    const names = data.map((d) => d.display_name).filter((s): s is string => Boolean(s));
+    // Deduplicate while preserving order
+    const seen = new Set<string>();
+    const unique: string[] = [];
+    for (const n of names) {
+      if (!seen.has(n)) {
+        seen.add(n);
+        unique.push(n);
+      }
+    }
+    return unique;
+  } catch {
+    return [];
+  }
+}
+
 export function computeRisk(d: { precip: number | null; wind: number | null; temp: number | null }):
   | "low"
   | "medium"

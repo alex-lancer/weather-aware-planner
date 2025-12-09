@@ -4,6 +4,7 @@ import DayName from "./DayName";
 import RiskBadge from "./RiskBadge";
 import BaseSelect from "../commonComponents/BaseSelect";
 import BaseButton from "../commonComponents/BaseButton";
+import CityAutocomplete from "../commonComponents/CityAutocomplete";
 
 export default function Planner() {
   const { role, city, coords, days, tasks, degraded } = useLoaderData<LoaderData>();
@@ -21,13 +22,7 @@ export default function Planner() {
       <header className="flex flex-col gap-3 mb-4">
         <h1 className="text-xl font-semibold">Weather-aware Planner</h1>
         <Form method="get" className="flex gap-2 items-center">
-          <input
-            type="text"
-            name="city"
-            defaultValue={city}
-            placeholder="City"
-            className="flex-1 rounded-lg border px-3 py-2 text-sm dark:bg-neutral-900 dark:border-neutral-700"
-          />
+          <CityAutocomplete name="city" defaultValue={city} />
           <BaseSelect
             name="role"
             defaultValue={role}
