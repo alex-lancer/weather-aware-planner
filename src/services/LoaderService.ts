@@ -84,13 +84,9 @@ console.log("city", city);
     }
   }
 
-  // Filter tasks by role and city from Redux store
+  // Load all tasks regardless of city/role
   const all = store.getState().tasks.items as Task[];
-  const allTasks = all.filter((t) => t.city.toLowerCase() === city.toLowerCase());
-  let visible: Task[];
-  if (role === "manager") visible = allTasks;
-  else if (role === "dispatcher") visible = allTasks.filter((t) => t.role === "dispatcher" || t.role === "technician");
-  else visible = allTasks.filter((t) => t.role === "technician");
+  const visible: Task[] = all;
 
   return { role, city, coords, days, tasks: visible, degraded, week, weekStart: weekStartIso, weekEnd: weekEndIso };
 }
