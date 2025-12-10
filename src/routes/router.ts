@@ -4,7 +4,7 @@ import Planner from '../components/Planner';
 import NewTask from '../components/dashboard/NewTask';
 import EditTask from '../components/dashboard/EditTask';
 import { loader as plannerLoader } from '../services/LoaderService';
-import { newTaskAction, editTaskAction, taskLoader } from '../services/TaskActions';
+import { newTaskAction, editTaskAction, taskLoader, rescheduleTaskAction } from '../services/TaskActions';
 
 function RootLayout(props: { children?: React.ReactNode }) {
   return React.createElement(
@@ -46,6 +46,10 @@ export const router = createBrowserRouter([
     element: RootLayout({ children: React.createElement(EditTask) }),
     loader: taskLoader,
     action: editTaskAction,
+  },
+  {
+    path: '/dashboard/task/:id/reschedule',
+    action: rescheduleTaskAction,
   },
   {
     path: '*',

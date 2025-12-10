@@ -18,16 +18,6 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
 
   const roles: Role[] = ['manager', 'dispatcher', 'technician'];
 
-  const weekdayOptions = [
-    { value: 0, label: 'Sunday' },
-    { value: 1, label: 'Monday' },
-    { value: 2, label: 'Tuesday' },
-    { value: 3, label: 'Wednesday' },
-    { value: 4, label: 'Thursday' },
-    { value: 5, label: 'Friday' },
-    { value: 6, label: 'Saturday' },
-  ];
-
   return (
     <Form method="post" className="space-y-4">
       {initial?.id && <input type="hidden" name="id" value={initial.id} />}
@@ -65,12 +55,14 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="weekday">Weekday</label>
-          <BaseSelect id="weekday" name="weekday" defaultValue={String(initial?.weekday ?? 1)}>
-            {weekdayOptions.map(w => (
-              <option key={w.value} value={w.value}>{w.label}</option>
-            ))}
-          </BaseSelect>
+          <label className="block text-sm font-medium mb-1" htmlFor="date">Date</label>
+          <BaseInput
+            id="date"
+            name="date"
+            type="date"
+            required
+            defaultValue={(initial?.date ? new Date(initial.date as any) : new Date()).toISOString().slice(0,10)}
+          />
         </div>
       </div>
 

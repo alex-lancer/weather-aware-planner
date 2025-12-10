@@ -2,7 +2,7 @@
   {
     "id": "t1",
     "title": "Rooftop inspection",
-    "weekday": 1,
+    "date": "2025-12-11",
     "role": "technician",
     "city": "Seattle",
     "durationHours": 3
@@ -10,7 +10,7 @@
   {
     "id": "t2",
     "title": "Pole replacement",
-    "weekday": 2,
+    "date": "2025-12-12",
     "role": "technician",
     "city": "Seattle",
     "durationHours": 4
@@ -18,7 +18,7 @@
   {
     "id": "t3",
     "title": "Plan weekly routes",
-    "weekday": 0,
+    "date": "2025-12-14",
     "role": "dispatcher",
     "city": "Seattle",
     "durationHours": 2
@@ -26,7 +26,7 @@
   {
     "id": "t4",
     "title": "Client review meeting",
-    "weekday": 4,
+    "date": "2025-12-15",
     "role": "manager",
     "city": "Seattle",
     "durationHours": 1
@@ -34,7 +34,7 @@
   {
     "id": "t5",
     "title": "Wind farm maintenance",
-    "weekday": 3,
+    "date": "2025-12-16",
     "role": "technician",
     "city": "Denver",
     "durationHours": 5

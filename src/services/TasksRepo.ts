@@ -2,12 +2,42 @@ import seed from '../data/tasks.json';
 import type { Task } from '../types';
 import { STORAGE_KEY } from '../store/tasksSlice';
 
+function reviveAndMigrate(items: any[]): Task[] {
+  const today = new Date();
+  function nextDateForWeekday(weekday: number): Date {
+    const d = new Date(today);
+    const diff = (weekday - d.getDay() + 7) % 7;
+    d.setDate(d.getDate() + diff);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+  return (items || []).map((it: any) => {
+    let date: Date | null = null;
+    if (it.date) {
+      date = new Date(typeof it.date === 'string' ? it.date : it.date);
+    } else if (typeof it.weekday === 'number') {
+      date = nextDateForWeekday(it.weekday);
+    }
+    if (!date || Number.isNaN(date.getTime())) date = new Date();
+    const t: Task = {
+      id: String(it.id || ''),
+      title: String(it.title || ''),
+      description: it.description ? String(it.description) : undefined,
+      role: it.role,
+      city: String(it.city || ''),
+      durationHours: Number(it.durationHours || 1),
+      date,
+    };
+    return t;
+  });
+}
+
 function readAll(): Task[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as Task[];
+    if (raw) return reviveAndMigrate(JSON.parse(raw));
   } catch {}
-  return seed as Task[];
+  return reviveAndMigrate(seed as any[]);
 }
 
 function writeAll(tasks: Task[]) {

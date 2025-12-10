@@ -12,7 +12,7 @@ export type Task = {
   id: string;
   title: string;
   description?: string;
-  weekday: number; // JS getDay() 0..6 (0=Sun)
+  date: Date;
   role: Role;
   city: string;
   durationHours: number;
@@ -25,6 +25,9 @@ export type LoaderData = {
   days: DailyWeather[];
   tasks: Task[];
   degraded: boolean;
+  week: number; // relative week offset from current week (0=current)
+  weekStart: string; // ISO date (Monday)
+  weekEnd: string; // ISO date (Sunday)
 };
 
 export const DEFAULT_CITY = "Seattle";
