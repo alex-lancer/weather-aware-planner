@@ -11,6 +11,7 @@ export type DailyWeather = {
 export type Task = {
   id: string;
   title: string;
+  description?: string;
   weekday: number; // JS getDay() 0..6 (0=Sun)
   role: Role;
   city: string;

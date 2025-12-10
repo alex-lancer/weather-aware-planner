@@ -1,6 +1,6 @@
 import { LoaderData, Task, DailyWeather, DEFAULT_CITY, DEFAULT_COORDS, Role } from "../types";
 import { computeRisk, geocodeCity } from "./HelperService";
-import tasks from "../data/tasks.json";
+import { store } from "../store";
 
 export async function loader({ request }: { request: Request }): Promise<LoaderData> {
   const url = new URL(request.url);
@@ -69,8 +69,9 @@ export async function loader({ request }: { request: Request }): Promise<LoaderD
     }
   }
 
-  // Filter tasks by role and city
-  const allTasks = (tasks as Task[]).filter((t) => t.city.toLowerCase() === city.toLowerCase());
+  // Filter tasks by role and city from Redux store
+  const all = store.getState().tasks.items as Task[];
+  const allTasks = all.filter((t) => t.city.toLowerCase() === city.toLowerCase());
   let visible: Task[];
   if (role === "manager") visible = allTasks;
   else if (role === "dispatcher") visible = allTasks.filter((t) => t.role === "dispatcher" || t.role === "technician");

@@ -1,8 +1,10 @@
 import React from 'react';
 import { createBrowserRouter, redirect } from 'react-router-dom';
 import Planner from '../components/Planner';
-import DashboardTask from '../components/dashboard/DashboardTask';
+import NewTask from '../components/dashboard/NewTask';
+import EditTask from '../components/dashboard/EditTask';
 import { loader as plannerLoader } from '../services/LoaderService';
+import { newTaskAction, editTaskAction, taskLoader } from '../services/TaskActions';
 
 function RootLayout(props: { children?: React.ReactNode }) {
   return React.createElement(
@@ -36,7 +38,14 @@ export const router = createBrowserRouter([
   },
   {
     path: '/dashboard/task',
-    element: RootLayout({ children: React.createElement(DashboardTask) }),
+    element: RootLayout({ children: React.createElement(NewTask) }),
+    action: newTaskAction,
+  },
+  {
+    path: '/dashboard/task/:id',
+    element: RootLayout({ children: React.createElement(EditTask) }),
+    loader: taskLoader,
+    action: editTaskAction,
   },
   {
     path: '*',
