@@ -2,6 +2,8 @@ import React from 'react';
 import { Form, Link, useNavigation } from 'react-router-dom';
 import BaseButton from '../../commonComponents/BaseButton';
 import BaseSelect from '../../commonComponents/BaseSelect';
+import BaseInput from '../../commonComponents/BaseInput';
+import BaseTextarea from '../../commonComponents/BaseTextarea';
 import CityAutocomplete from '../../commonComponents/CityAutocomplete';
 import type { Task, Role } from '../../types';
 
@@ -9,8 +11,6 @@ type TaskFormProps = {
   initial?: Partial<Task>;
   mode: 'create' | 'edit';
 };
-
-const inputBase = 'rounded-lg border px-3 py-2 text-sm w-full dark:bg-neutral-900 dark:border-neutral-700';
 
 export default function TaskForm({ initial, mode }: TaskFormProps) {
   const nav = useNavigation();
@@ -34,24 +34,22 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
 
       <div>
         <label className="block text-sm font-medium mb-1" htmlFor="title">Title</label>
-        <input
+        <BaseInput
           id="title"
           name="title"
           required
           defaultValue={initial?.title ?? ''}
-          className={inputBase}
           placeholder="Task title"
         />
       </div>
 
       <div>
         <label className="block text-sm font-medium mb-1" htmlFor="description">Description</label>
-        <textarea
+        <BaseTextarea
           id="description"
           name="description"
           rows={4}
           defaultValue={initial?.description ?? ''}
-          className={inputBase}
           placeholder="Describe the task"
         />
       </div>
@@ -79,7 +77,7 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1" htmlFor="durationHours">Duration (hours)</label>
-          <input
+          <BaseInput
             id="durationHours"
             name="durationHours"
             type="number"
@@ -88,7 +86,6 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
             step={1}
             required
             defaultValue={initial?.durationHours ?? 1}
-            className={inputBase}
           />
         </div>
         <div>
@@ -101,13 +98,11 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
         <BaseButton type="submit" variant="primary" disabled={isSubmitting}>
           {isSubmitting ? (mode === 'create' ? 'Creating…' : 'Saving…') : (mode === 'create' ? 'Create Task' : 'Save Changes')}
         </BaseButton>
-        {mode === 'edit' && (
-          <Link to="/">
-            <BaseButton type="button" variant="secondary" disabled={isSubmitting}>
-              Cancel
-            </BaseButton>
-          </Link>
-        )}
+        <Link to="/">
+          <BaseButton type="button" variant="secondary" disabled={isSubmitting}>
+            Cancel
+          </BaseButton>
+        </Link>
       </div>
     </Form>
   );

@@ -1,17 +1,17 @@
-import { Form, useLoaderData, useNavigation } from "react-router-dom";
+import { Form, Link, useLoaderData, useNavigation } from "react-router-dom";
 import { LoaderData, Task, DailyWeather, DEFAULT_CITY, DEFAULT_COORDS, Role } from "../types";
 import DayName from "./DayName";
 import RiskBadge from "./RiskBadge";
 import BaseSelect from "../commonComponents/BaseSelect";
 import BaseButton from "../commonComponents/BaseButton";
 import CityAutocomplete from "../commonComponents/CityAutocomplete";
+import { Link as RLink } from "react-router-dom";
 
 export default function Planner() {
   const { role, city, coords, days, tasks, degraded } = useLoaderData<LoaderData>();
   const nav = useNavigation();
   const isSubmitting = nav.state === "submitting" || nav.state === "loading";
 
-  // Group tasks by weekday index
   const grouped = new Map<number, Task[]>();
   for (const t of tasks) {
     grouped.set(t.weekday, [...(grouped.get(t.weekday) ?? []), t]);
@@ -20,7 +20,12 @@ export default function Planner() {
   return (
     <main className="pt-6 pb-20 px-4 max-w-3xl mx-auto">
       <header className="flex flex-col gap-3 mb-4">
-        <h1 className="text-xl font-semibold">Weather-aware Planner</h1>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-xl font-semibold">Weather-aware Planner</h1>
+          <Link to="/dashboard/task">
+            <BaseButton variant="primary">Create new task</BaseButton>
+          </Link>
+        </div>
         <Form method="get" className="flex gap-2 items-center">
           <CityAutocomplete name="city" defaultValue={city} />
           <BaseSelect
@@ -76,7 +81,9 @@ export default function Planner() {
                 <ul className="space-y-2">
                   {dayTasks.map((t) => (
                     <li key={t.id} className="flex items-center justify-between text-sm">
-                      <span className="truncate">{t.title}</span>
+                      <RLink to={`/dashboard/task/${t.id}`} className="truncate text-blue-700 hover:underline">
+                        {t.title}
+                      </RLink>
                       <span className="text-xs text-gray-500">{t.durationHours}h</span>
                     </li>
                   ))}

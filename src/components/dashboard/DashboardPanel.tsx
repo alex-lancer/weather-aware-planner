@@ -7,7 +7,7 @@ export default function DashboardPanel() {
     <div>
       <div>Dashboard</div>
       <Link to="/dashboard/task">
-        <BaseButton variant="primary">Create new taks</BaseButton>
+        <BaseButton variant="primary">Create new task</BaseButton>
       </Link>
     </div>
   );
