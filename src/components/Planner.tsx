@@ -9,18 +9,32 @@ export default function Planner() {
   const nav = useNavigation();
   const isSubmitting = nav.state === "submitting" || nav.state === "loading";
 
-  const grouped = new Map<string, Task[]>();
+  // Build nested map for visible week: isoDate -> city -> Task[]
+  const grouped = new Map<string, Map<string, Task[]>>();
   const toISO = (d: Date) => {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${y}-${m}-${day}`;
   };
+  const visibleIso = new Set(days.map((d) => d.date));
   for (const t of tasks) {
-    const key = toISO(new Date(t.date));
-    grouped.set(key, [...(grouped.get(key) ?? []), t]);
+    const iso = toISO(new Date(t.date));
+    if (!visibleIso.has(iso)) continue;
+    const byCity = grouped.get(iso) ?? new Map<string, Task[]>();
+    const arr = byCity.get(t.city) ?? [];
+    byCity.set(t.city, [...arr, t]);
+    grouped.set(iso, byCity);
   }
-console.log("DEBUG", tasks, grouped);
+
+  // Derive sorted list of cities that have tasks in the visible week
+  const cities = Array.from(
+    new Set(
+      tasks
+        .filter((t) => visibleIso.has(toISO(new Date(t.date))))
+        .map((t) => t.city)
+    )
+  ).sort((a, b) => a.localeCompare(b));
   return (
     <main className="pt-6 pb-20 px-4 max-w-3xl mx-auto">
       <header className="flex flex-col gap-3 mb-4">
@@ -55,52 +69,66 @@ console.log("DEBUG", tasks, grouped);
         </div>
       </header>
 
-      <section className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {days.map((d) => {
-          const dayTasks = grouped.get(d.date) ?? [];
-          return (
-            <div key={d.date} className="rounded-2xl border p-3 dark:border-neutral-700">
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <DayName iso={d.date} />
-                <RiskBadge risk={d.risk} />
-              </div>
-              <div className="flex gap-3 text-xs text-gray-700 dark:text-gray-300 mb-3">
-                <span>
-                  ☔ {d.precipProb != null ? `${d.precipProb}%` : "–"}
-                </span>
-                <span>
-                  💨 {d.windMax != null ? `${d.windMax} m/s` : "–"}
-                </span>
-                <span>
-                  🥶 {d.tempMin != null ? `${d.tempMin}°C` : "–"}
-                </span>
-              </div>
-              {dayTasks.length === 0 ? (
-                <p className="text-sm text-gray-500">No tasks</p>
-              ) : (
-                <ul className="space-y-2">
-                  {dayTasks.map((t) => (
-                    <li key={t.id} className="flex items-center justify-between gap-2 text-sm">
-                      <div className="min-w-0 flex-1">
-                        <Link to={`/dashboard/task/${t.id}`} className="truncate text-blue-700 hover:underline">
-                          {t.title}
-                        </Link>
+      {/* Full-bleed section with one row per city, each row has 7 day cards */}
+      <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen overflow-x-auto">
+        <div className="px-4 sm:px-6 space-y-6">
+          {cities.length === 0 ? (
+            <p className="text-sm text-gray-500">No tasks in this week</p>
+          ) : (
+            cities.map((c) => (
+              <div key={c} className="">
+                <div className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{c}</div>
+                <section className="grid grid-cols-7 gap-3 min-w-[980px]">
+                  {days.map((d) => {
+                    const dayCityTasks = grouped.get(d.date)?.get(c) ?? [];
+                    return (
+                      <div key={d.date + '::' + c} className="rounded-2xl border p-3 dark:border-neutral-700">
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <DayName iso={d.date} />
+                          <RiskBadge risk={d.risk} />
+                        </div>
+                        <div className="flex gap-3 text-xs text-gray-700 dark:text-gray-300 mb-3">
+                          <span>
+                            ☔ {d.precipProb != null ? `${d.precipProb}%` : "–"}
+                          </span>
+                          <span>
+                            💨 {d.windMax != null ? `${d.windMax} m/s` : "–"}
+                          </span>
+                          <span>
+                            🥶 {d.tempMin != null ? `${d.tempMin}°C` : "–"}
+                          </span>
+                        </div>
+                        {dayCityTasks.length === 0 ? (
+                          <p className="text-sm text-gray-500">No tasks</p>
+                        ) : (
+                          <ul className="space-y-2">
+                            {dayCityTasks.map((t) => (
+                              <li key={t.id} className="flex items-center justify-between gap-2 text-sm">
+                                <div className="min-w-0 flex-1">
+                                  <Link to={`/dashboard/task/${t.id}`} className="truncate text-blue-700 hover:underline">
+                                    {t.title}
+                                  </Link>
+                                </div>
+                                <span className="text-xs text-gray-500 whitespace-nowrap">{t.durationHours}h</span>
+                                <form method="post" action={`/dashboard/task/${t.id}/reschedule`} className="ml-2">
+                                  <input type="hidden" name="week" value={String(week)} />
+                                  <BaseButton type="submit" size="sm" variant="secondary" disabled={isSubmitting}>
+                                    {isSubmitting ? '…' : 'R'}
+                                  </BaseButton>
+                                </form>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
                       </div>
-                      <span className="text-xs text-gray-500 whitespace-nowrap">{t.durationHours}h</span>
-                      <form method="post" action={`/dashboard/task/${t.id}/reschedule`} className="ml-2">
-                        <input type="hidden" name="week" value={String(week)} />
-                        <BaseButton type="submit" size="sm" variant="secondary" disabled={isSubmitting}>
-                          {isSubmitting ? '…' : 'Reschedule'}
-                        </BaseButton>
-                      </form>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          );
-        })}
-      </section>
+                    );
+                  })}
+                </section>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
 
       <footer className="mt-6 text-xs text-gray-500">
         Risk is based on rain probability ≥ 40%, wind ≥ 10 m/s, and temp ≤ 0°C.
