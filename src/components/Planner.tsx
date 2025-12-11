@@ -3,6 +3,7 @@ import { LoaderData, Task } from "../types";
 import TaskCard from "./TaskCard";
 import PlannerHeader from "./PlannerHeader";
 import PlannerFooter from "./PlannerFooter";
+import PlannerCityTabs from "./PlannerCityTabs";
 
 export default function Planner() {
   const { city, coords, days, tasks, degraded, week, weekStart, weekEnd } = useLoaderData<LoaderData>();
@@ -46,33 +47,47 @@ export default function Planner() {
         weekEnd={weekEnd}
       />
 
-      {/* Full-bleed section with one row per city, each row has 7 day cards */}
+      {/* Full-bleed content area */}
       <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen overflow-x-auto">
         <div className="px-4 sm:px-6 space-y-6">
-          {cities.length === 0 ? (
-            <p className="text-sm text-gray-500">No tasks in this week</p>
-          ) : (
-            cities.map((c) => (
-              <div key={c} className="">
-                <div className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{c}</div>
-                <section className="grid grid-cols-7 gap-3 min-w-[980px]">
-                  {days.map((d) => {
-                    const dayCityTasks = grouped.get(d.date)?.get(c) ?? [];
-                    return (
-                      <TaskCard
-                        key={d.date + '::' + c}
-                        day={d}
-                        tasks={dayCityTasks}
-                        week={week}
-                        isSubmitting={isSubmitting}
-                        city={c}
-                      />
-                    );
-                  })}
-                </section>
-              </div>
-            ))
-          )}
+          {/* Mobile & Tablet (<= lg-1): tabs grouped by city, stacked one column */}
+          <div className="block lg:hidden">
+            <PlannerCityTabs
+              cities={cities}
+              days={days}
+              grouped={grouped}
+              week={week}
+              isSubmitting={isSubmitting}
+            />
+          </div>
+
+          {/* Desktop (lg+): rows per city with 7 cards */}
+          <div className="hidden lg:block">
+            {cities.length === 0 ? (
+              <p className="text-sm text-gray-500">No tasks in this week</p>
+            ) : (
+              cities.map((c) => (
+                <div key={c} className="">
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{c}</div>
+                  <section className="grid grid-cols-7 gap-3 min-w-[980px]">
+                    {days.map((d) => {
+                      const dayCityTasks = grouped.get(d.date)?.get(c) ?? [];
+                      return (
+                        <TaskCard
+                          key={d.date + '::' + c}
+                          day={d}
+                          tasks={dayCityTasks}
+                          week={week}
+                          isSubmitting={isSubmitting}
+                          city={c}
+                        />
+                      );
+                    })}
+                  </section>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
 
