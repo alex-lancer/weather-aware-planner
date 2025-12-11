@@ -6,6 +6,7 @@ import BaseInput from '../../commonComponents/BaseInput';
 import BaseTextarea from '../../commonComponents/BaseTextarea';
 import CityAutocomplete from '../../commonComponents/CityAutocomplete';
 import type { Task, Role } from '../../types';
+import { useAppSelector } from '../../store';
 
 type TaskFormProps = {
   initial?: Partial<Task>;
@@ -15,6 +16,8 @@ type TaskFormProps = {
 export default function TaskForm({ initial, mode }: TaskFormProps) {
   const nav = useNavigation();
   const isSubmitting = nav.state === 'submitting' || nav.state === 'loading';
+  const currentUser = useAppSelector((s) => s.auth.currentUser);
+  const isReadOnly = mode === 'edit' && currentUser?.role === 'technician';
 
   const roles: Role[] = ['manager', 'dispatcher', 'technician'];
 
@@ -28,6 +31,7 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
           id="title"
           name="title"
           required
+          readOnly={isReadOnly}
           defaultValue={initial?.title ?? ''}
           placeholder="Task title"
         />
@@ -39,6 +43,7 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
           id="description"
           name="description"
           rows={4}
+          readOnly={isReadOnly}
           defaultValue={initial?.description ?? ''}
           placeholder="Describe the task"
         />
@@ -47,7 +52,7 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1" htmlFor="role">Role</label>
-          <BaseSelect id="role" name="role" defaultValue={initial?.role ?? 'technician'}>
+          <BaseSelect id="role" name="role" defaultValue={initial?.role ?? 'technician'} disabled={isReadOnly}>
             {roles.map(r => (
               <option key={r} value={r}>{r[0].toUpperCase() + r.slice(1)}</option>
             ))}
@@ -61,6 +66,7 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
             name="date"
             type="date"
             required
+            disabled={isReadOnly}
             defaultValue={(initial?.date ? new Date(initial.date as any) : new Date()).toISOString().slice(0,10)}
           />
         </div>
@@ -77,18 +83,21 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
             max={24}
             step={1}
             required
+            disabled={isReadOnly}
             defaultValue={initial?.durationHours ?? 1}
           />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1" htmlFor="city">City</label>
-          <CityAutocomplete name="city" defaultValue={initial?.city ?? ''} />
+          <CityAutocomplete name="city" defaultValue={initial?.city ?? ''} disabled={isReadOnly as any} />
         </div>
       </div>
 
       <div className="flex gap-2">
-        <BaseButton type="submit" variant="primary" disabled={isSubmitting}>
-          {isSubmitting ? (mode === 'create' ? 'Creating…' : 'Saving…') : (mode === 'create' ? 'Create Task' : 'Save Changes')}
+        <BaseButton type="submit" variant="primary" disabled={isSubmitting || isReadOnly}>
+          {isReadOnly
+            ? 'Read‑only'
+            : (isSubmitting ? (mode === 'create' ? 'Creating…' : 'Saving…') : (mode === 'create' ? 'Create Task' : 'Save Changes'))}
         </BaseButton>
         <Link to="/">
           <BaseButton type="button" variant="secondary" disabled={isSubmitting}>
@@ -96,6 +105,9 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
           </BaseButton>
         </Link>
       </div>
+      {isReadOnly && (
+        <p className="text-xs text-gray-600">Technicians cannot edit tasks. Fields are read‑only.</p>
+      )}
     </Form>
   );
 }

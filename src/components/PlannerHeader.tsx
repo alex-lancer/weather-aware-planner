@@ -32,9 +32,11 @@ export default function PlannerHeader({ city, coords, degraded, week, weekStart,
               <BaseButton variant="secondary">Login</BaseButton>
             </Link>
           )}
-          <Link to="/dashboard/task">
-            <BaseButton variant="primary">Create new task</BaseButton>
-          </Link>
+          {currentUser?.role === 'manager' && (
+            <Link to="/dashboard/task">
+              <BaseButton variant="primary">Create new task</BaseButton>
+            </Link>
+          )}
         </div>
       </div>
       <div className="text-xs text-gray-600 dark:text-gray-400">

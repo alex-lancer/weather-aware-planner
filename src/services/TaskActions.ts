@@ -84,6 +84,14 @@ export async function rescheduleTaskAction({ request, params }: ActionFunctionAr
   if (!existing) throw new Response('Not found', { status: 404 });
 
   const fd = await request.formData();
+  // Permission check: allow only manager and dispatcher to reschedule
+  const currentUser = state.auth?.currentUser;
+  if (!currentUser || (currentUser.role !== 'manager' && currentUser.role !== 'dispatcher')) {
+    const weekParamTmp = String(fd.get('week') ?? '').trim();
+    const paramsOutTmp = new URLSearchParams();
+    if (weekParamTmp !== '') paramsOutTmp.set('week', weekParamTmp);
+    return redirect('/' + (paramsOutTmp.toString() ? ('?' + paramsOutTmp.toString()) : ''));
+  }
   const role = (fd.get('role') as Role) || 'manager';
   const cityFromForm = String(fd.get('city') || '').trim();
   const city = cityFromForm || existing.city;
