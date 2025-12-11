@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { Link, Form } from "react-router-dom";
+import { useAppSelector } from "../store";
 import BaseButton from "../commonComponents/BaseButton";
 
 type Props = {
@@ -11,13 +12,30 @@ type Props = {
 };
 
 export default function PlannerHeader({ city, coords, degraded, week, weekStart, weekEnd }: Props) {
+  const currentUser = useAppSelector((s) => s.auth.currentUser);
   return (
     <header className="flex flex-col gap-3 mb-4">
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-xl font-semibold">Weather-aware Planner</h1>
-        <Link to="/dashboard/task">
-          <BaseButton variant="primary">Create new task</BaseButton>
-        </Link>
+        <div className="flex items-center gap-2">
+          {currentUser ? (
+            <>
+              <span className="text-sm text-gray-700 dark:text-gray-300 mr-2">
+                {currentUser.name} ({currentUser.role})
+              </span>
+              <Form method="post" action="/logout">
+                <BaseButton variant="secondary" type="submit">Logout</BaseButton>
+              </Form>
+            </>
+          ) : (
+            <Link to="/login">
+              <BaseButton variant="secondary">Login</BaseButton>
+            </Link>
+          )}
+          <Link to="/dashboard/task">
+            <BaseButton variant="primary">Create new task</BaseButton>
+          </Link>
+        </div>
       </div>
       <div className="text-xs text-gray-600 dark:text-gray-400">
         {degraded ? (

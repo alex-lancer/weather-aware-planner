@@ -5,6 +5,8 @@ import NewTask from '../components/dashboard/NewTask';
 import EditTask from '../components/dashboard/EditTask';
 import { loader as plannerLoader } from '../services/LoaderService';
 import { newTaskAction, editTaskAction, taskLoader, rescheduleTaskAction } from '../services/TaskActions';
+import Login from '../components/Login';
+import { loginAction, logoutAction, requireAuthLoader } from '../services/AuthActions';
 
 function RootLayout(props: { children?: React.ReactNode }) {
   return React.createElement(
@@ -33,23 +35,39 @@ export const router = createBrowserRouter([
   {
     path: '/',
     element: RootLayout({ children: React.createElement(Planner) }),
-    loader: plannerLoader,
+    loader: async (args) => {
+      const result = await requireAuthLoader(args);
+      if (result) {
+        return result;
+      }
+      return await plannerLoader(args);
+    },
     errorElement,
   },
   {
     path: '/dashboard/task',
     element: RootLayout({ children: React.createElement(NewTask) }),
+    loader: requireAuthLoader,
     action: newTaskAction,
   },
   {
     path: '/dashboard/task/:id',
     element: RootLayout({ children: React.createElement(EditTask) }),
-    loader: taskLoader,
+    loader: async (args) => requireAuthLoader(args) ?? taskLoader(args),
     action: editTaskAction,
   },
   {
     path: '/dashboard/task/:id/reschedule',
     action: rescheduleTaskAction,
+  },
+  {
+    path: '/login',
+    element: RootLayout({ children: React.createElement(Login) }),
+    action: loginAction,
+  },
+  {
+    path: '/logout',
+    action: logoutAction,
   },
   {
     path: '*',

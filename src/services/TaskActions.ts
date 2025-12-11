@@ -65,6 +65,20 @@ export async function rescheduleTaskAction({ request, params }: ActionFunctionAr
   const id = params.id as string;
   if (!id) throw new Error('Missing id');
 
+  const stateBefore = store.getState();
+  if (!stateBefore.auth?.currentUser) {
+    const fdTmp = await request.formData();
+    const roleTmp = (fdTmp.get('role') as Role) || 'manager';
+    const cityTmp = String(fdTmp.get('city') || '').trim();
+    const weekParamTmp = String(fdTmp.get('week') ?? '').trim();
+    const paramsOutTmp = new URLSearchParams();
+    if (cityTmp) paramsOutTmp.set('city', cityTmp);
+    if (roleTmp) paramsOutTmp.set('role', roleTmp);
+    if (weekParamTmp !== '') paramsOutTmp.set('week', weekParamTmp);
+    const from = '/?' + paramsOutTmp.toString();
+    return redirect('/login?from=' + encodeURIComponent(from));
+  }
+
   const state = store.getState();
   const existing = state.tasks.items.find((x: Task) => x.id === id);
   if (!existing) throw new Response('Not found', { status: 404 });
