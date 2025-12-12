@@ -17,7 +17,7 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
   const nav = useNavigation();
   const isSubmitting = nav.state === 'submitting' || nav.state === 'loading';
   const currentUser = useAppSelector((s) => s.auth.currentUser);
-  const isReadOnly = mode === 'edit' && currentUser?.role === 'technician';
+  const isTechEdit = mode === 'edit' && currentUser?.role === 'technician';
 
   const roles: Role[] = ['manager', 'dispatcher', 'technician'];
   const statuses: Status[] = ['ToDo', 'InProgress', 'Done'];
@@ -32,7 +32,7 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
           id="title"
           name="title"
           required
-          readOnly={isReadOnly}
+          readOnly={isTechEdit}
           defaultValue={initial?.title ?? ''}
           placeholder="Task title"
         />
@@ -44,7 +44,7 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
           id="description"
           name="description"
           rows={4}
-          readOnly={isReadOnly}
+          readOnly={isTechEdit}
           defaultValue={initial?.description ?? ''}
           placeholder="Describe the task"
         />
@@ -56,7 +56,7 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
           id="notes"
           name="notes"
           rows={3}
-          readOnly={isReadOnly}
+          readOnly={false}
           defaultValue={initial?.notes ?? ''}
           placeholder="Additional notes (optional)"
         />
@@ -65,11 +65,14 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1" htmlFor="role">Role</label>
-          <BaseSelect id="role" name="role" defaultValue={initial?.role ?? 'technician'} disabled={isReadOnly}>
+          <BaseSelect id="role" name="role" defaultValue={initial?.role ?? 'technician'} disabled={isTechEdit}>
             {roles.map(r => (
               <option key={r} value={r}>{r[0].toUpperCase() + r.slice(1)}</option>
             ))}
           </BaseSelect>
+          {isTechEdit && (
+            <input type="hidden" name="role" value={initial?.role ?? 'technician'} />
+          )}
         </div>
 
         <div>
@@ -79,9 +82,16 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
             name="date"
             type="date"
             required
-            disabled={isReadOnly}
+            disabled={isTechEdit}
             defaultValue={(initial?.date ? new Date(initial.date as any) : new Date()).toISOString().slice(0,10)}
           />
+          {isTechEdit && (
+            <input
+              type="hidden"
+              name="date"
+              value={(initial?.date ? new Date(initial.date as any) : new Date()).toISOString().slice(0,10)}
+            />
+          )}
         </div>
       </div>
 
@@ -96,19 +106,25 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
             max={24}
             step={1}
             required
-            disabled={isReadOnly}
+            disabled={isTechEdit}
             defaultValue={initial?.durationHours ?? 1}
           />
+          {isTechEdit && (
+            <input type="hidden" name="durationHours" value={String(initial?.durationHours ?? 1)} />
+          )}
         </div>
         <div>
           <label className="block text-sm font-medium mb-1" htmlFor="city">City</label>
-          <CityAutocomplete name="city" defaultValue={initial?.city ?? ''} disabled={isReadOnly as any} />
+          <CityAutocomplete name="city" defaultValue={initial?.city ?? ''} disabled={isTechEdit as any} />
+          {isTechEdit && (
+            <input type="hidden" name="city" value={initial?.city ?? ''} />
+          )}
         </div>
       </div>
 
       <div>
         <label className="block text-sm font-medium mb-1" htmlFor="status">Status</label>
-        <BaseSelect id="status" name="status" defaultValue={initial?.status ?? 'ToDo'} disabled={isReadOnly}>
+        <BaseSelect id="status" name="status" defaultValue={initial?.status ?? 'ToDo'}>
           {statuses.map(s => (
             <option key={s} value={s}>{s === 'ToDo' ? 'To Do' : s === 'InProgress' ? 'In Progress' : 'Done'}</option>
           ))}
@@ -116,10 +132,8 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
       </div>
 
       <div className="flex gap-2">
-        <BaseButton type="submit" variant="primary" disabled={isSubmitting || isReadOnly}>
-          {isReadOnly
-            ? 'Read‑only'
-            : (isSubmitting ? (mode === 'create' ? 'Creating…' : 'Saving…') : (mode === 'create' ? 'Create Task' : 'Save Changes'))}
+        <BaseButton type="submit" variant="primary" disabled={isSubmitting}>
+          {isSubmitting ? (mode === 'create' ? 'Creating…' : 'Saving…') : (mode === 'create' ? 'Create Task' : 'Save Changes')}
         </BaseButton>
         <Link to="/">
           <BaseButton type="button" variant="secondary" disabled={isSubmitting}>
@@ -127,8 +141,8 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
           </BaseButton>
         </Link>
       </div>
-      {isReadOnly && (
-        <p className="text-xs text-gray-600">Technicians cannot edit tasks. Fields are read‑only.</p>
+      {isTechEdit && (
+        <p className="text-xs text-gray-600">Technicians can edit only Status and Notes. Other fields are locked.</p>
       )}
     </Form>
   );

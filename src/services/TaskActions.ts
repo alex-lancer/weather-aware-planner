@@ -46,8 +46,21 @@ export async function editTaskAction({ request }: ActionFunctionArgs) {
   const fd = await request.formData();
   const id = String(fd.get('id') || '');
   if (!id) throw new Error('Missing id');
+  // Load existing to allow role-based merge rules
+  const state = store.getState();
+  const existing = state.tasks.items.find((x: Task) => x.id === id);
+  if (!existing) {
+    throw new Response('Not found', { status: 404 });
+  }
   const t = parseTask(fd, id);
-  const updated: Task = { ...t, id };
+
+  const currentUser = state.auth?.currentUser;
+  let updated: Task;
+  if (currentUser?.role === 'technician') {
+    updated = { ...existing, status: t.status, notes: t.notes };
+  } else {
+    updated = { ...t, id };
+  }
   store.dispatch(updateTask(updated));
   return redirect('/');
 }
