@@ -1,12 +1,12 @@
 import { useLoaderData, useNavigation } from "react-router-dom";
-import { LoaderData, Task } from "../types";
+import { LoaderData, Task, DailyWeather } from "../types";
 import TaskCard from "./TaskCard";
 import PlannerHeader from "./PlannerHeader";
 import PlannerFooter from "./PlannerFooter";
 import PlannerCityTabs from "./PlannerCityTabs";
 
 export default function Planner() {
-  const { city, coords, days, tasks, degraded, week, weekStart, weekEnd } = useLoaderData<LoaderData>();
+  const { city, coords, days, tasks, degraded, week, weekStart, weekEnd, cityDays } = useLoaderData<LoaderData>();
   const nav = useNavigation();
   const isSubmitting = nav.state === "submitting" || nav.state === "loading";
 
@@ -58,6 +58,7 @@ export default function Planner() {
               grouped={grouped}
               week={week}
               isSubmitting={isSubmitting}
+              cityDays={cityDays}
             />
           </div>
 
@@ -70,7 +71,7 @@ export default function Planner() {
                 <div key={c} className="">
                   <div className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{c}</div>
                   <section className="grid grid-cols-7 gap-3 min-w-[980px]">
-                    {days.map((d) => {
+                    {(cityDays?.[c] ?? days).map((d: DailyWeather) => {
                       const dayCityTasks = grouped.get(d.date)?.get(c) ?? [];
                       return (
                         <TaskCard

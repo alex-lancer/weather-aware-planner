@@ -28,6 +28,8 @@ export type LoaderData = {
   week: number; // relative week offset from current week (0=current)
   weekStart: string; // ISO date (Monday)
   weekEnd: string; // ISO date (Sunday)
+  // Per-city weather for the visible week (Mon–Sun)
+  cityDays?: Record<string, DailyWeather[]>;
 };
 
 export const DEFAULT_CITY = "Seattle";

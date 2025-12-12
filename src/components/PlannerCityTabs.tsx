@@ -8,9 +8,10 @@ type Props = {
   grouped: Map<string, Map<string, Task[]>>; // iso -> city -> tasks
   week: number;
   isSubmitting: boolean;
+  cityDays?: Record<string, DailyWeather[]>;
 };
 
-export default function PlannerCityTabs({ cities, days, grouped, week, isSubmitting }: Props) {
+export default function PlannerCityTabs({ cities, days, grouped, week, isSubmitting, cityDays }: Props) {
   const [active, setActive] = React.useState<string>(cities[0] ?? '');
   React.useEffect(() => {
     if (!active || !cities.includes(active)) {
@@ -47,10 +48,10 @@ export default function PlannerCityTabs({ cities, days, grouped, week, isSubmitt
         })}
       </div>
 
-      {/* Active city content: stack cards in one column for tablet view */}
+      {/* Active city content: stack cards in one column for tablet/mobile view */}
       {active && (
         <section className="grid grid-cols-1 gap-3">
-          {days.map((d) => {
+          {(cityDays?.[active] ?? days).map((d) => {
             const dayCityTasks = grouped.get(d.date)?.get(active) ?? [];
             return (
               <TaskCard
