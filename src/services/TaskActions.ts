@@ -9,6 +9,7 @@ function parseTask(form: FormData, existingId?: string): Task {
   const id = (form.get('id') as string) || existingId || '';
   const title = String(form.get('title') || '').trim();
   const description = String(form.get('description') || '').trim() || undefined;
+  const notes = String(form.get('notes') || '').trim() || undefined;
   const role = (form.get('role') as Role) || 'technician';
   const dateStr = String(form.get('date') || '').trim();
   const durationHours = Number(form.get('durationHours'));
@@ -28,6 +29,7 @@ function parseTask(form: FormData, existingId?: string): Task {
     durationHours,
     city,
     status,
+    notes,
   };
 }
 

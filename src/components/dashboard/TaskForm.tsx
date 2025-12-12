@@ -50,6 +50,18 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
         />
       </div>
 
+      <div>
+        <label className="block text-sm font-medium mb-1" htmlFor="notes">Notes</label>
+        <BaseTextarea
+          id="notes"
+          name="notes"
+          rows={3}
+          readOnly={isReadOnly}
+          defaultValue={initial?.notes ?? ''}
+          placeholder="Additional notes (optional)"
+        />
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1" htmlFor="role">Role</label>

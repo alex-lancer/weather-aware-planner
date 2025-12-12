@@ -28,6 +28,7 @@ function reviveAndMigrate(items: any[]): Task[] {
       durationHours: Number(it.durationHours || 1),
       date,
       status: (it.status === 'InProgress' || it.status === 'Done') ? it.status : 'ToDo',
+      notes: it.notes ? String(it.notes) : undefined,
     };
     return t;
   });

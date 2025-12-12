@@ -19,6 +19,7 @@ export type Task = {
   city: string;
   durationHours: number;
   status: Status;
+  notes?: string;
 };
 
 export type LoaderData = {
