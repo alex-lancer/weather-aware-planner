@@ -53,7 +53,11 @@ export const router = createBrowserRouter([
   {
     path: '/dashboard/task/:id',
     element: RootLayout({ children: React.createElement(EditTask) }),
-    loader: async (args) => requireAuthLoader(args) ?? taskLoader(args),
+    loader: async (args) => {
+      const result = await requireAuthLoader(args);
+      if (result) return result;
+      return await taskLoader(args);
+    },
     action: editTaskAction,
   },
   {
