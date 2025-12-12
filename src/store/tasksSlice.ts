@@ -35,6 +35,7 @@ function reviveAndMigrate(items: any[]): Task[] {
       city: String(it.city || ''),
       durationHours: Number(it.durationHours || 1),
       date,
+      status: (it.status === 'InProgress' || it.status === 'Done') ? it.status : 'ToDo',
     };
     return t;
   });

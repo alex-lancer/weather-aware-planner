@@ -5,7 +5,8 @@
     "date": "2025-12-11",
     "role": "technician",
     "city": "Seattle",
-    "durationHours": 3
+    "durationHours": 3,
+    "status": "ToDo"
   },
   {
     "id": "t2",
@@ -13,7 +14,8 @@
     "date": "2025-12-12",
     "role": "technician",
     "city": "Seattle",
-    "durationHours": 4
+    "durationHours": 4,
+    "status": "ToDo"
   },
   {
     "id": "t3",
@@ -21,7 +23,8 @@
     "date": "2025-12-14",
     "role": "dispatcher",
     "city": "Seattle",
-    "durationHours": 2
+    "durationHours": 2,
+    "status": "ToDo"
   },
   {
     "id": "t4",
@@ -29,7 +32,8 @@
     "date": "2025-12-15",
     "role": "manager",
     "city": "Seattle",
-    "durationHours": 1
+    "durationHours": 1,
+    "status": "ToDo"
   },
   {
     "id": "t5",
@@ -37,6 +41,7 @@
     "date": "2025-12-16",
     "role": "technician",
     "city": "Denver",
-    "durationHours": 5
+    "durationHours": 5,
+    "status": "ToDo"
   }
 ]

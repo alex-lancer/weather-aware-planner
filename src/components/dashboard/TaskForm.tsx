@@ -5,7 +5,7 @@ import BaseSelect from '../../commonComponents/BaseSelect';
 import BaseInput from '../../commonComponents/BaseInput';
 import BaseTextarea from '../../commonComponents/BaseTextarea';
 import CityAutocomplete from '../../commonComponents/CityAutocomplete';
-import type { Task, Role } from '../../types';
+import type { Task, Role, Status } from '../../types';
 import { useAppSelector } from '../../store';
 
 type TaskFormProps = {
@@ -20,6 +20,7 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
   const isReadOnly = mode === 'edit' && currentUser?.role === 'technician';
 
   const roles: Role[] = ['manager', 'dispatcher', 'technician'];
+  const statuses: Status[] = ['ToDo', 'InProgress', 'Done'];
 
   return (
     <Form method="post" className="space-y-4">
@@ -91,6 +92,15 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
           <label className="block text-sm font-medium mb-1" htmlFor="city">City</label>
           <CityAutocomplete name="city" defaultValue={initial?.city ?? ''} disabled={isReadOnly as any} />
         </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-1" htmlFor="status">Status</label>
+        <BaseSelect id="status" name="status" defaultValue={initial?.status ?? 'ToDo'} disabled={isReadOnly}>
+          {statuses.map(s => (
+            <option key={s} value={s}>{s === 'ToDo' ? 'To Do' : s === 'InProgress' ? 'In Progress' : 'Done'}</option>
+          ))}
+        </BaseSelect>
       </div>
 
       <div className="flex gap-2">

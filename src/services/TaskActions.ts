@@ -1,5 +1,5 @@
 import { ActionFunctionArgs, LoaderFunctionArgs, redirect } from 'react-router-dom';
-import type { Task, Role } from '../types';
+import type { Task, Role, Status } from '../types';
 import { store } from '../store';
 import { addTask, updateTask } from '../store/tasksSlice';
 import { computeRisk, geocodeCity } from './HelperService';
@@ -13,6 +13,8 @@ function parseTask(form: FormData, existingId?: string): Task {
   const dateStr = String(form.get('date') || '').trim();
   const durationHours = Number(form.get('durationHours'));
   const city = String(form.get('city') || '').trim();
+  const statusIn = String(form.get('status') || '').trim() as Status;
+  const status: Status = (statusIn === 'ToDo' || statusIn === 'InProgress' || statusIn === 'Done') ? statusIn : 'ToDo';
   const date = dateStr ? new Date(dateStr + 'T00:00:00') : null;
   if (!title || !city || !date || Number.isNaN(date.getTime()) || Number.isNaN(durationHours)) {
     throw new Error('Invalid form data');
@@ -25,6 +27,7 @@ function parseTask(form: FormData, existingId?: string): Task {
     date,
     durationHours,
     city,
+    status,
   };
 }
 

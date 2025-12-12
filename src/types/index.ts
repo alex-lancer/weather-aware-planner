@@ -8,6 +8,8 @@ export type DailyWeather = {
   risk: "low" | "medium" | "high";
 };
 
+export type Status = "ToDo" | "InProgress" | "Done";
+
 export type Task = {
   id: string;
   title: string;
@@ -16,6 +18,7 @@ export type Task = {
   role: Role;
   city: string;
   durationHours: number;
+  status: Status;
 };
 
 export type LoaderData = {

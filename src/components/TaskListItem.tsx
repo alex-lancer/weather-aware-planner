@@ -15,7 +15,19 @@ export default function TaskListItem({ task, week, isSubmitting, className }: Ta
   const canReschedule = currentUser && (currentUser.role === 'manager' || currentUser.role === 'dispatcher');
   return (
     <li className={("flex items-center justify-between gap-2 text-sm " + (className ?? "")).trim()}>
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 flex items-center gap-2">
+        {/* Status badge */}
+        <span
+          className={[
+            'inline-block px-2 py-0.5 rounded-full text-[10px] leading-4 border',
+            task.status === 'Done' ? 'bg-green-50 text-green-700 border-green-200' :
+            task.status === 'InProgress' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+            'bg-gray-50 text-gray-700 border-gray-200'
+          ].join(' ')}
+          title={`Status: ${task.status}`}
+        >
+          {task.status === 'ToDo' ? 'To Do' : task.status === 'InProgress' ? 'In Progress' : 'Done'}
+        </span>
         <Link to={`/dashboard/task/${task.id}`} className="truncate text-blue-700 hover:underline">
           {task.title}
         </Link>
