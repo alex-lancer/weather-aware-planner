@@ -2,7 +2,9 @@ import { ActionFunctionArgs, LoaderFunctionArgs, redirect } from 'react-router-d
 import type { Task, Role, Status } from '../types';
 import { store } from '../store';
 import { addTask, updateTask } from '../store/tasksSlice';
-import { computeRisk, geocodeCity } from './HelperService';
+import { computeRisk } from './HelperService';
+import { geocodeCity } from '../providers/NominatimProfider';
+import { getNextDays } from '../providers/ForecastProvider';
 import { DEFAULT_COORDS } from '../types';
 
 function parseTask(form: FormData, existingId?: string): Task {
@@ -119,27 +121,17 @@ export async function rescheduleTaskAction({ request, params }: ActionFunctionAr
   // Geocode city (fallback to default coords if fails)
   const coords = (await geocodeCity(city)) || DEFAULT_COORDS;
 
-  // Fetch 7-day forecast (starting today)
-  const api = new URL('https://api.open-meteo.com/v1/forecast');
-  api.searchParams.set('latitude', String(coords.lat));
-  api.searchParams.set('longitude', String(coords.lon));
-  api.searchParams.set('daily', 'precipitation_probability_max,temperature_2m_min,wind_speed_10m_max');
-  api.searchParams.set('timezone', 'auto');
-  api.searchParams.set('forecast_days', '7');
-
+  // Fetch 7-day forecast (starting today) via provider
   let dates: string[] = [];
   let precip: Array<number | null> = [];
   let wind: Array<number | null> = [];
   let temp: Array<number | null> = [];
   try {
-    const res = await fetch(api.toString());
-    if (res.ok) {
-      const data = (await res.json()) as any;
-      dates = data.daily?.time ?? [];
-      precip = data.daily?.precipitation_probability_max ?? [];
-      wind = data.daily?.wind_speed_10m_max ?? data.daily?.windspeed_10m_max ?? [];
-      temp = data.daily?.temperature_2m_min ?? [];
-    }
+    const series = await getNextDays(coords, 7);
+    dates = series.dates;
+    precip = series.precip;
+    wind = series.wind;
+    temp = series.temp;
   } catch {}
 
   // Decide next acceptable day (skip today: start from index 1)

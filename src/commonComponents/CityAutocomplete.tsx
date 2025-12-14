@@ -1,5 +1,5 @@
 import React from 'react';
-import { searchCities } from '../services/HelperService';
+import { searchCities } from '../providers/NominatimProfider';
 
 export interface CityAutocompleteProps extends React.InputHTMLAttributes<HTMLInputElement> {
   name: string;

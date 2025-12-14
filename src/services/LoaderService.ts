@@ -1,5 +1,7 @@
 import { LoaderData, Task, DailyWeather, DEFAULT_CITY, DEFAULT_COORDS, Role } from "../types";
-import { computeRisk, geocodeCity } from "./HelperService";
+import { computeRisk } from "./HelperService";
+import { geocodeCity } from "../providers/NominatimProfider";
+import { getDailyRange } from "../providers/ForecastProvider";
 import { store } from "../store";
 
 export async function loader({ request }: { request: Request }): Promise<LoaderData> {
@@ -36,27 +38,10 @@ export async function loader({ request }: { request: Request }): Promise<LoaderD
     if (city.toLowerCase() !== DEFAULT_CITY.toLowerCase()) degraded = true;
   }
 
-  // Fetch Open-Meteo daily forecast for the selected Monday–Sunday range (for header city)
-  const api = new URL("https://api.open-meteo.com/v1/forecast");
-  api.searchParams.set("latitude", String(coords.lat));
-  api.searchParams.set("longitude", String(coords.lon));
-  api.searchParams.set(
-    "daily",
-    "precipitation_probability_max,temperature_2m_min,wind_speed_10m_max"
-  );
-  api.searchParams.set("timezone", "auto");
-  api.searchParams.set("start_date", weekStartIso);
-  api.searchParams.set("end_date", weekEndIso);
-
   let days: DailyWeather[] = [];
   try {
-    const res = await fetch(api.toString());
-    if (!res.ok) throw new Error("weather failed");
-    const data = (await res.json()) as any;
-    const dates: string[] = data.daily?.time ?? [];
-    const precip: Array<number | null> = data.daily?.precipitation_probability_max ?? [];
-    const wind: Array<number | null> = data.daily?.wind_speed_10m_max ?? data.daily?.windspeed_10m_max ?? [];
-    const temp: Array<number | null> = data.daily?.temperature_2m_min ?? [];
+    const series = await getDailyRange(coords, weekStartIso, weekEndIso);
+    const { dates, precip, wind, temp } = series;
     days = dates.map((dt, i) => {
       const d = {
         date: dt,
@@ -110,24 +95,8 @@ export async function loader({ request }: { request: Request }): Promise<LoaderD
       const gc = await geocodeCity(cityName);
       if (gc) ccoords = gc;
     } catch {}
-    const apiUrl = new URL("https://api.open-meteo.com/v1/forecast");
-    apiUrl.searchParams.set("latitude", String(ccoords.lat));
-    apiUrl.searchParams.set("longitude", String(ccoords.lon));
-    apiUrl.searchParams.set(
-      "daily",
-      "precipitation_probability_max,temperature_2m_min,wind_speed_10m_max"
-    );
-    apiUrl.searchParams.set("timezone", "auto");
-    apiUrl.searchParams.set("start_date", weekStartIso);
-    apiUrl.searchParams.set("end_date", weekEndIso);
     try {
-      const r = await fetch(apiUrl.toString());
-      if (!r.ok) throw new Error("weather failed");
-      const data = (await r.json()) as any;
-      const dates: string[] = data.daily?.time ?? [];
-      const precip: Array<number | null> = data.daily?.precipitation_probability_max ?? [];
-      const wind: Array<number | null> = data.daily?.wind_speed_10m_max ?? data.daily?.windspeed_10m_max ?? [];
-      const temp: Array<number | null> = data.daily?.temperature_2m_min ?? [];
+      const { dates, precip, wind, temp } = await getDailyRange(ccoords, weekStartIso, weekEndIso);
       return dates.map((dt: string, i: number) => {
         const d = {
           date: dt,
