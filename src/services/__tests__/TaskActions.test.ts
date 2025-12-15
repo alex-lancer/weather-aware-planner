@@ -4,25 +4,26 @@ import type { Task } from '../../types';
 const mockDispatch = jest.fn();
 const mockGetState = jest.fn(() => ({
   tasks: { items: [] as Task[] },
-  auth: { currentUser: null },
+  auth: { currentUser: null as any },
 }));
 
 jest.mock('../../store', () => ({
   store: {
-    dispatch: (...args: any[]) => mockDispatch(...args),
-    getState: (...args: any[]) => mockGetState(...args),
+    // forward the first argument without using spread to avoid TS2556
+    dispatch: (action: any) => mockDispatch(action),
+    getState: () => mockGetState(),
   },
 }));
 
 // Mock providers
 const mockGeocodeCity = jest.fn();
 jest.mock('../../providers/NominatimProfider', () => ({
-  geocodeCity: (...args: any[]) => mockGeocodeCity(...args),
+  geocodeCity: (city: any) => mockGeocodeCity(city),
 }));
 
 const mockGetNextDays = jest.fn();
 jest.mock('../../providers/ForecastProvider', () => ({
-  getNextDays: (...args: any[]) => mockGetNextDays(...args),
+  getNextDays: (coords: any, days?: any) => mockGetNextDays(coords, days),
 }));
 
 // Mock RouterShim.redirect to avoid pulling react-router-dom into tests

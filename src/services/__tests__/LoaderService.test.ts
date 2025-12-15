@@ -7,7 +7,7 @@ jest.mock('../../store', () => {
     store: {
       getState: jest.fn(() => ({
         tasks: { items: [] },
-        auth: { currentUser: null },
+        auth: { currentUser: null as any },
       })),
     },
   };
@@ -16,12 +16,12 @@ jest.mock('../../store', () => {
 // Mock providers
 const mockGeocodeCity = jest.fn();
 jest.mock('../../providers/NominatimProfider', () => ({
-  geocodeCity: (...args: any[]) => mockGeocodeCity(...args),
+  geocodeCity: (city: any) => mockGeocodeCity(city),
 }));
 
 const mockGetDailyRange = jest.fn();
 jest.mock('../../providers/ForecastProvider', () => ({
-  getDailyRange: (...args: any[]) => mockGetDailyRange(...args),
+  getDailyRange: (coords: any, startIso: any, endIso: any) => mockGetDailyRange(coords, startIso, endIso),
 }));
 
 // Use real computeRisk from HelperService

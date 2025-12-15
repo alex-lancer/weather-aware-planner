@@ -102,7 +102,7 @@ export async function rescheduleTaskAction({ request, params }: ActionFunctionAr
   const existing = state.tasks.items.find((x: Task) => x.id === id);
   if (!existing) throw new Response('Not found', { status: 404 });
 
-  if (!canRescheduleTask()) {
+  if (!canRescheduleTask(stateBefore.auth?.currentUser)) {
     return redirectToDashboard(fd);
   }
 
@@ -132,11 +132,8 @@ async function redirectToLogin(fdTmp: FormData) {
   return redirect('/login?from=' + encodeURIComponent(from));
 }
 
-function canRescheduleTask() {
-  const state = store.getState();
-  const currentUser = state.auth?.currentUser;
-
-  return currentUser && (currentUser.role !== 'manager' && currentUser.role !== 'dispatcher');
+function canRescheduleTask(currentUser: { role: string } | null | undefined) {
+  return !!(currentUser && (currentUser.role === 'manager' || currentUser.role === 'dispatcher'));
 }
 
 function redirectToDashboard(formData: FormData) {
