@@ -47,15 +47,17 @@ export async function newTaskAction({ request }: ActionFunctionArgs) {
 export async function editTaskAction({ request }: ActionFunctionArgs) {
   const fd = await request.formData();
   const id = String(fd.get('id') || '');
+
   if (!id) throw new Error('Missing id');
-  // Load existing to allow role-based merge rules
+
   const state = store.getState();
   const existing = state.tasks.items.find((x: Task) => x.id === id);
+
   if (!existing) {
     throw new Response('Not found', { status: 404 });
   }
-  const t = parseTask(fd, id);
 
+  const t = parseTask(fd, id);
   const currentUser = state.auth?.currentUser;
   let updated: Task;
   if (currentUser?.role === 'technician') {
@@ -63,7 +65,9 @@ export async function editTaskAction({ request }: ActionFunctionArgs) {
   } else {
     updated = { ...t, id };
   }
+
   store.dispatch(updateTask(updated));
+
   return redirect('/');
 }
 
@@ -83,45 +87,74 @@ export async function taskLoader({ params }: LoaderFunctionArgs) {
  */
 export async function rescheduleTaskAction({ request, params }: ActionFunctionArgs) {
   const id = params.id as string;
+  const fd = await request.formData();
+
   if (!id) throw new Error('Missing id');
 
   const stateBefore = store.getState();
   if (!stateBefore.auth?.currentUser) {
-    const fdTmp = await request.formData();
-    const roleTmp = (fdTmp.get('role') as Role) || 'manager';
-    const cityTmp = String(fdTmp.get('city') || '').trim();
-    const weekParamTmp = String(fdTmp.get('week') ?? '').trim();
-    const paramsOutTmp = new URLSearchParams();
-    if (cityTmp) paramsOutTmp.set('city', cityTmp);
-    if (roleTmp) paramsOutTmp.set('role', roleTmp);
-    if (weekParamTmp !== '') paramsOutTmp.set('week', weekParamTmp);
-    const from = '/?' + paramsOutTmp.toString();
-    return redirect('/login?from=' + encodeURIComponent(from));
+    return redirectToLogin(fd);
   }
 
   const state = store.getState();
   const existing = state.tasks.items.find((x: Task) => x.id === id);
   if (!existing) throw new Response('Not found', { status: 404 });
 
-  const fd = await request.formData();
-  // Permission check: allow only manager and dispatcher to reschedule
-  const currentUser = state.auth?.currentUser;
-  if (!currentUser || (currentUser.role !== 'manager' && currentUser.role !== 'dispatcher')) {
-    const weekParamTmp = String(fd.get('week') ?? '').trim();
-    const paramsOutTmp = new URLSearchParams();
-    if (weekParamTmp !== '') paramsOutTmp.set('week', weekParamTmp);
-    return redirect('/' + (paramsOutTmp.toString() ? ('?' + paramsOutTmp.toString()) : ''));
+  if (!canRescheduleTask()) {
+    return redirectToDashboard(fd);
   }
-  const role = (fd.get('role') as Role) || 'manager';
-  const cityFromForm = String(fd.get('city') || '').trim();
-  const city = cityFromForm || existing.city;
-  const weekParam = String(fd.get('week') ?? '').trim();
-  const weekNum = weekParam !== '' && !Number.isNaN(Number(weekParam)) ? Math.trunc(Number(weekParam)) : undefined;
 
-  // Geocode city (fallback to default coords if fails)
+  const { role, city, weekNum } = fetchDataFromForm(fd, existing);
   const coords = (await geocodeCity(city)) || DEFAULT_COORDS;
 
   // Fetch 7-day forecast (starting today) via provider
+  const { risks, dates} = await getNextDaysRisks(coords);
+  const newDate = chooseBestDate(risks, dates);
+  if (newDate) {
+    const updated: Task = { ...existing, date: newDate };
+    store.dispatch(updateTask(updated));
+  }
+
+  return returnToDashboard(city, role, weekNum);
+}
+
+async function redirectToLogin(fdTmp: FormData) {
+  const roleTmp = (fdTmp.get('role') as Role) || 'manager';
+  const cityTmp = String(fdTmp.get('city') || '').trim();
+  const weekParamTmp = String(fdTmp.get('week') ?? '').trim();
+  const paramsOutTmp = new URLSearchParams();
+  if (cityTmp) paramsOutTmp.set('city', cityTmp);
+  if (roleTmp) paramsOutTmp.set('role', roleTmp);
+  if (weekParamTmp !== '') paramsOutTmp.set('week', weekParamTmp);
+  const from = '/?' + paramsOutTmp.toString();
+  return redirect('/login?from=' + encodeURIComponent(from));
+}
+
+function canRescheduleTask() {
+  const state = store.getState();
+  const currentUser = state.auth?.currentUser;
+
+  return currentUser && (currentUser.role !== 'manager' && currentUser.role !== 'dispatcher');
+}
+
+function redirectToDashboard(formData: FormData) {
+  const weekParamTmp = String(formData.get('week') ?? '').trim();
+  const paramsOutTmp = new URLSearchParams();
+  if (weekParamTmp !== '') paramsOutTmp.set('week', weekParamTmp);
+  return redirect('/' + (paramsOutTmp.toString() ? ('?' + paramsOutTmp.toString()) : ''));
+}
+
+function fetchDataFromForm(formData: FormData, existing: Task) {
+  const role = (formData.get('role') as Role) || 'manager';
+  const cityFromForm = String(formData.get('city') || '').trim();
+  const city = cityFromForm || existing.city;
+  const weekParam = String(formData.get('week') ?? '').trim();
+  const weekNum = weekParam !== '' && !Number.isNaN(Number(weekParam)) ? Math.trunc(Number(weekParam)) : undefined;
+
+  return { role, city, weekNum };
+}
+
+async function getNextDaysRisks(coords: any) {
   let dates: string[] = [];
   let precip: Array<number | null> = [];
   let wind: Array<number | null> = [];
@@ -135,7 +168,6 @@ export async function rescheduleTaskAction({ request, params }: ActionFunctionAr
   } catch {}
 
   // Decide next acceptable day (skip today: start from index 1)
-  let chosenIdx = -1;
   const risks = dates.map((dt: string, i: number) =>
     computeRisk({
       precip: precip[i] ?? null,
@@ -143,6 +175,14 @@ export async function rescheduleTaskAction({ request, params }: ActionFunctionAr
       temp: temp[i] ?? null,
     })
   );
+
+  return {
+    risks, dates
+  }
+}
+
+function chooseBestDate(risks: string[], dates: string[]) {
+  let chosenIdx = -1;
   // Look for next 'low'
   for (let i = 1; i < risks.length; i++) {
     if (risks[i] === 'low') { chosenIdx = i; break; }
@@ -155,11 +195,11 @@ export async function rescheduleTaskAction({ request, params }: ActionFunctionAr
   }
 
   if (chosenIdx !== -1) {
-    const newDate = new Date(dates[chosenIdx] + 'T00:00:00');
-    const updated: Task = { ...existing, date: newDate };
-    store.dispatch(updateTask(updated));
+    return new Date(dates[chosenIdx] + 'T00:00:00');
   }
+}
 
+function returnToDashboard(city: string, role: string, weekNum?: number) {
   const paramsOut = new URLSearchParams();
   if (city) paramsOut.set('city', city);
   if (role) paramsOut.set('role', role);

@@ -9,8 +9,91 @@ export async function loader({ request }: { request: Request }): Promise<LoaderD
   const role = (url.searchParams.get("role") as Role) || "manager";
   const city = url.searchParams.get("city") || DEFAULT_CITY;
   const weekParam = Number(url.searchParams.get("week") ?? "0");
-  const week = Number.isFinite(weekParam) ? Math.trunc(weekParam) : 0;
 
+  const { weekStartIso, weekEndIso, week } = calcBaseDays(weekParam);
+  let { coords, degraded } = await tryGeocodeCity(city);
+
+  const days = await fetchDaysForCoords(coords, weekStartIso, weekEndIso);
+
+  const allTasks: Task[] = store.getState().tasks.items as Task[];
+  const citiesInWeek = fetchCitiesInWeek(allTasks, weekStartIso);
+
+  const entries = await Promise.all(
+    citiesInWeek.map(async (c) => [c, await fetchDaysForCity(c, weekStartIso, weekEndIso)] as const)
+  );
+  const cityDays: Record<string, DailyWeather[]> = Object.fromEntries(entries);
+
+  return { role, city, coords, days, tasks: allTasks, degraded, week, weekStart: weekStartIso, weekEnd: weekEndIso, cityDays };
+}
+
+
+function fetchCitiesInWeek(tasks: Task[], weekStartIso: string) {
+  const isoInWeek = new Set<string>();
+  const start = new Date(weekStartIso + "T00:00:00");
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    isoInWeek.add(d.toISOString().slice(0, 10));
+  }
+  return Array.from(new Set(
+    tasks
+      .filter((t) => isoInWeek.has(new Date(t.date).toISOString().slice(0, 10)))
+      .map((t) => t.city)
+  ));
+}
+
+async function fetchDaysForCoords(
+  coords: { lat: number; lon: number },
+  weekStartIso: string,
+  weekEndIso: string
+): Promise<DailyWeather[]> {
+  try {
+    const { dates, precip, wind, temp } = await getDailyRange(coords, weekStartIso, weekEndIso);
+    return dates.map((dt: string, i: number) => {
+      const d = {
+        date: dt,
+        precipProb: precip[i] ?? null,
+        windMax: wind[i] ?? null,
+        tempMin: temp[i] ?? null,
+      };
+      return { ...d, risk: computeRisk({ precip: d.precipProb, wind: d.windMax, temp: d.tempMin }) };
+    });
+  } catch {
+    // Fallback placeholders
+    const out: DailyWeather[] = [];
+    const start = new Date(weekStartIso + "T00:00:00");
+    for (let i = 0; i < 7; i++) {
+      const nd = new Date(start);
+      nd.setDate(start.getDate() + i);
+      out.push({
+        date: nd.toISOString().slice(0, 10),
+        precipProb: null,
+        windMax: null,
+        tempMin: null,
+        risk: "low",
+      });
+    }
+    return out;
+  }
+}
+
+async function fetchDaysForCity(
+  cityName: string,
+  weekStartIso: string,
+  weekEndIso: string
+): Promise<DailyWeather[]> {
+  let coords = DEFAULT_COORDS;
+  try {
+    const gc = await geocodeCity(cityName);
+    if (gc) coords = gc;
+  } catch {
+    // ignore, will use DEFAULT_COORDS
+  }
+  return fetchDaysForCoords(coords, weekStartIso, weekEndIso);
+}
+
+function calcBaseDays(weekParam: number) {
+  const week = Number.isFinite(weekParam) ? Math.trunc(weekParam) : 0;
   // Compute Monday (weekStart) and Sunday (weekEnd) for the requested week offset
   const today = new Date();
   const day = today.getDay(); // 0..6, 0 = Sun
@@ -23,9 +106,14 @@ export async function loader({ request }: { request: Request }): Promise<LoaderD
   const weekStartIso = baseMonday.toISOString().slice(0, 10);
   const weekEndIso = baseSunday.toISOString().slice(0, 10);
 
+  return { weekStartIso, weekEndIso, week };
+}
+
+
+async function tryGeocodeCity(city: string): Promise<{ coords: { lat: number; lon: number }; degraded: boolean }> {
   let coords = DEFAULT_COORDS;
   let degraded = false;
-  // Try to geocode the city quickly; fall back gracefully
+
   const geocodePromise = geocodeCity(city);
   try {
     const c = await Promise.race([
@@ -37,101 +125,5 @@ export async function loader({ request }: { request: Request }): Promise<LoaderD
   } catch {
     if (city.toLowerCase() !== DEFAULT_CITY.toLowerCase()) degraded = true;
   }
-
-  let days: DailyWeather[] = [];
-  try {
-    const series = await getDailyRange(coords, weekStartIso, weekEndIso);
-    const { dates, precip, wind, temp } = series;
-    days = dates.map((dt, i) => {
-      const d = {
-        date: dt,
-        precipProb: precip[i] ?? null,
-        windMax: wind[i] ?? null,
-        tempMin: temp[i] ?? null,
-      };
-      return { ...d, risk: computeRisk({ precip: d.precipProb, wind: d.windMax, temp: d.tempMin }) };
-    });
-  } catch {
-    degraded = true;
-    // Create placeholder 7 days for selected week with null metrics
-    const start = new Date(weekStartIso + "T00:00:00");
-    for (let i = 0; i < 7; i++) {
-      const nd = new Date(start);
-      nd.setDate(start.getDate() + i);
-      days.push({
-        date: nd.toISOString().slice(0, 10),
-        precipProb: null,
-        windMax: null,
-        tempMin: null,
-        risk: "low",
-      });
-    }
-  }
-
-  // Load all tasks regardless of city/role
-  const all = store.getState().tasks.items as Task[];
-  const visible: Task[] = all;
-
-  // Determine cities that have tasks within the visible week
-  const isoInWeek = new Set<string>();
-  {
-    const start = new Date(weekStartIso + "T00:00:00");
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(start);
-      d.setDate(start.getDate() + i);
-      isoInWeek.add(d.toISOString().slice(0, 10));
-    }
-  }
-  const citiesInWeek = Array.from(new Set(
-    visible
-      .filter((t) => isoInWeek.has(new Date(t.date).toISOString().slice(0, 10)))
-      .map((t) => t.city)
-  ));
-
-  // Helper to fetch days for a specific city
-  async function fetchDaysForCity(cityName: string): Promise<DailyWeather[]> {
-    let ccoords = DEFAULT_COORDS;
-    try {
-      const gc = await geocodeCity(cityName);
-      if (gc) ccoords = gc;
-    } catch {}
-    try {
-      const { dates, precip, wind, temp } = await getDailyRange(ccoords, weekStartIso, weekEndIso);
-      return dates.map((dt: string, i: number) => {
-        const d = {
-          date: dt,
-          precipProb: precip[i] ?? null,
-          windMax: wind[i] ?? null,
-          tempMin: temp[i] ?? null,
-        };
-        return { ...d, risk: computeRisk({ precip: d.precipProb, wind: d.windMax, temp: d.tempMin }) };
-      });
-    } catch {
-      // Fallback placeholders
-      const out: DailyWeather[] = [];
-      const start = new Date(weekStartIso + "T00:00:00");
-      for (let i = 0; i < 7; i++) {
-        const nd = new Date(start);
-        nd.setDate(start.getDate() + i);
-        out.push({
-          date: nd.toISOString().slice(0, 10),
-          precipProb: null,
-          windMax: null,
-          tempMin: null,
-          risk: "low",
-        });
-      }
-      return out;
-    }
-  }
-
-  // Build per-city weather map
-  const entries = await Promise.all(
-    citiesInWeek.map(async (c) => [c, await fetchDaysForCity(c)] as const)
-  );
-  const cityDays: Record<string, DailyWeather[]> = Object.fromEntries(entries);
-
-  return { role, city, coords, days, tasks: visible, degraded, week, weekStart: weekStartIso, weekEnd: weekEndIso, cityDays };
+  return { coords, degraded };
 }
-
-
