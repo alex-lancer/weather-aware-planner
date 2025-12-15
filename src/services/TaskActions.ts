@@ -1,4 +1,5 @@
-import { ActionFunctionArgs, LoaderFunctionArgs, redirect } from 'react-router-dom';
+import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router-dom';
+import { redirect } from '../RouterShim';
 import type { Task, Role, Status } from '../types';
 import { store } from '../store';
 import { addTask, updateTask } from '../store/tasksSlice';
@@ -39,7 +40,8 @@ export async function newTaskAction({ request }: ActionFunctionArgs) {
   const fd = await request.formData();
   const t = parseTask(fd);
   // create new id
-  const created: Task = { ...t, id: crypto.randomUUID ? crypto.randomUUID() : 't' + Math.random().toString(36).slice(2, 9) };
+  const createdId = (globalThis as any).crypto?.randomUUID?.() ?? ('t' + Math.random().toString(36).slice(2, 9));
+  const created: Task = { ...t, id: createdId };
   store.dispatch(addTask(created));
   return redirect('/');
 }
