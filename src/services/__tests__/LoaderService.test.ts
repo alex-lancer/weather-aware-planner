@@ -1,17 +1,5 @@
-import { loader } from '../LoaderService';
+import { makeLoader } from '../LoaderService';
 import type { Task } from '../../types';
-
-// Mock store
-jest.mock('../../store', () => {
-  return {
-    store: {
-      getState: jest.fn(() => ({
-        tasks: { items: [] },
-        auth: { currentUser: null as any },
-      })),
-    },
-  };
-});
 
 // Mock providers
 const mockGeocodeCity = jest.fn();
@@ -26,21 +14,21 @@ jest.mock('../../providers/ForecastProvider', () => ({
 
 // Use real computeRisk from HelperService
 
-const { store } = jest.requireMock('../../store');
+let fakeTasks: Task[] = [];
 
 function buildRequest(url: string) {
   return new Request(url);
 }
 
 function setTasks(tasks: Task[]) {
-  (store.getState as jest.Mock).mockReturnValue({
-    tasks: { items: tasks },
-    auth: { currentUser: { id: 'u1', name: 'Manager 1', username: 'manager1', role: 'manager' } },
-  });
+  fakeTasks = tasks;
 }
 
 describe('LoaderService.loader', () => {
   const systemNow = new Date('2025-12-15T10:11:00Z'); // Monday
+  const loader = makeLoader({
+    tasks: { getAll: () => fakeTasks },
+  });
 
   beforeAll(() => {
     jest.useFakeTimers();

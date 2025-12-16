@@ -3,7 +3,8 @@ import { createBrowserRouter, redirect } from 'react-router-dom';
 import Planner from '../components/Planner';
 import NewTask from '../components/dashboard/NewTask';
 import EditTask from '../components/dashboard/EditTask';
-import { loader as plannerLoader } from '../services/LoaderService';
+import { makeLoader } from '../services/LoaderService';
+import { ReduxTaskRepository } from '../services/adapters/ReduxTaskRepository';
 import { newTaskAction, editTaskAction, taskLoader, rescheduleTaskAction } from '../services/TaskActions';
 import Login from '../components/Login';
 import { loginAction, logoutAction, requireAuthLoader } from '../services/AuthActions';
@@ -40,6 +41,7 @@ export const router = createBrowserRouter([
       if (result) {
         return result;
       }
+      const plannerLoader = makeLoader({ tasks: new ReduxTaskRepository() });
       return await plannerLoader(args);
     },
     errorElement,
