@@ -40,6 +40,7 @@ export const router = createBrowserRouter([
       if (result) {
         return result;
       }
+      // Use deferred loader to enable Suspense in the Planner component
       return await plannerLoader(args);
     },
     errorElement,

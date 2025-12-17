@@ -4,6 +4,7 @@ import { geocodeCity } from "providers/NominatimProfider";
 import { getDailyRange } from "providers/ForecastProvider";
 import { withRetry } from "services/Retry";
 import { taskRepository } from "repositories/instances";
+import { defer } from "RouterShim";
 
 export async function plannerLoader({ request }: { request: Request }): Promise<LoaderData> {
   const url = new URL(request.url);
@@ -19,12 +20,65 @@ export async function plannerLoader({ request }: { request: Request }): Promise<
   const allTasks: Task[] = taskRepository.getAll();
   const citiesInWeek = fetchCitiesInWeek(allTasks, weekStartIso);
 
-  const entries = await Promise.all(
-    citiesInWeek.map(async (c) => [c, await fetchDaysForCity(c, weekStartIso, weekEndIso)] as const)
-  );
-  const cityDays: Record<string, DailyWeather[]> = Object.fromEntries(entries);
+  // Defer fetching of other cities' weather
+  const cityDaysPromise: Promise<Record<string, DailyWeather[]>> = (async () => {
+    const entries = await Promise.all(
+      citiesInWeek.map(async (c) => [c, await fetchDaysForCity(c, weekStartIso, weekEndIso)] as const)
+    );
+    return Object.fromEntries(entries);
+  })();
 
-  return { role, city, coords, days, tasks: allTasks, degraded, week, weekStart: weekStartIso, weekEnd: weekEndIso, cityDays };
+  return defer({
+    role,
+    city,
+    coords,
+    days,
+    tasks: allTasks,
+    degraded,
+    week,
+    weekStart: weekStartIso,
+    weekEnd: weekEndIso,
+    cityDays: cityDaysPromise,
+  });
+}
+
+// Deferred loader version to enable Suspense in the Planner component.
+// It returns base data immediately and defers secondary city forecasts (cityDays).
+export async function plannerDeferLoader({ request }: { request: Request }) {
+  const url = new URL(request.url);
+  const role = (url.searchParams.get("role") as Role) || "manager";
+  const city = url.searchParams.get("city") || DEFAULT_CITY;
+  const weekParam = Number(url.searchParams.get("week") ?? "0");
+
+  const { weekStartIso, weekEndIso, week } = calcBaseDays(weekParam);
+  const { coords, degraded } = await tryGeocodeCity(city);
+
+  // Keep main city days awaited so we can render the base view instantly after loader resolves
+  const days = await fetchDaysForCoords(coords, weekStartIso, weekEndIso);
+
+  const allTasks: Task[] = taskRepository.getAll();
+  const citiesInWeek = fetchCitiesInWeek(allTasks, weekStartIso);
+
+  // Defer fetching of other cities' weather
+  const cityDaysPromise: Promise<Record<string, DailyWeather[]>> = (async () => {
+    const entries = await Promise.all(
+      citiesInWeek.map(async (c) => [c, await fetchDaysForCity(c, weekStartIso, weekEndIso)] as const)
+    );
+    return Object.fromEntries(entries);
+  })();
+
+  return defer({
+    role,
+    city,
+    coords,
+    days,
+    tasks: allTasks,
+    degraded,
+    week,
+    weekStart: weekStartIso,
+    weekEnd: weekEndIso,
+    cityDays: cityDaysPromise,
+  });
 }
 
 
@@ -50,7 +104,8 @@ async function fetchDaysForCoords(
 ): Promise<DailyWeather[]> {
   try {
     const { dates, precip, wind, temp } = await withRetry(
-      () => getDailyRange(coords, weekStartIso, weekEndIso)
+      () => getDailyRange(coords, weekStartIso, weekEndIso),
+      { retries: 1, initialDelayMs: 0, factor: 1, maxDelayMs: 0 }
     );
     return dates.map((dt: string, i: number) => {
       const d = {

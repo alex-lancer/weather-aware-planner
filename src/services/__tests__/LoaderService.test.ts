@@ -192,13 +192,14 @@ describe('LoaderService.loader', () => {
     });
 
     const res = await plannerLoader({ request: buildRequest('http://localhost/?city=Seattle') });
-
+    // cityDays may be deferred (Promise); resolve it to test contents
+    const cityDays: any = await Promise.resolve((res as any).cityDays);
     // Only Seattle & Denver should be included
-    expect(Object.keys(res.cityDays || {})).toEqual(['Seattle', 'Denver']);
-    expect(res.cityDays?.Seattle?.length).toBe(7);
-    expect(res.cityDays?.Denver?.length).toBe(7);
+    expect(Object.keys(cityDays || {})).toEqual(['Seattle', 'Denver']);
+    expect(cityDays?.Seattle?.length).toBe(7);
+    expect(cityDays?.Denver?.length).toBe(7);
     // London is out of visible week
-    expect(res.cityDays?.London).toBeUndefined();
+    expect((cityDays as any)?.London).toBeUndefined();
   });
 
   test('supports week offsets (week=1)', async () => {
