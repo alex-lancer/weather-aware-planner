@@ -1,4 +1,4 @@
-import { makeLoader } from '../LoaderService';
+import { plannerLoader } from '../LoaderService';
 import type { Task } from '../../types';
 
 // Mock providers
@@ -26,9 +26,6 @@ function setTasks(tasks: Task[]) {
 
 describe('LoaderService.loader', () => {
   const systemNow = new Date('2025-12-15T10:11:00Z'); // Monday
-  const loader = makeLoader({
-    tasks: { getAll: () => fakeTasks },
-  });
 
   beforeAll(() => {
     jest.useFakeTimers();
@@ -101,7 +98,7 @@ describe('LoaderService.loader', () => {
     });
 
     // Act
-    const res = await loader({ request: buildRequest('http://localhost/?week=0&city=Seattle') });
+    const res = await plannerLoader({ request: buildRequest('http://localhost/?week=0&city=Seattle') });
 
     // Assert
     const exp = expectedWeekStartEnd(0);
@@ -121,7 +118,7 @@ describe('LoaderService.loader', () => {
     mockGeocodeCity.mockResolvedValue({ lat: 47.6062, lon: -122.3321 });
     mockGetDailyRange.mockRejectedValue(new Error('boom'));
 
-    const res = await loader({ request: buildRequest('http://localhost/?week=0') });
+    const res = await plannerLoader({ request: buildRequest('http://localhost/?week=0') });
     expect(res.days).toHaveLength(7);
     // Compute expected using the same approach as LoaderService fallback
     const startLocal = new Date(res.weekStart + 'T00:00:00');
@@ -139,10 +136,10 @@ describe('LoaderService.loader', () => {
     mockGeocodeCity.mockResolvedValue(null);
     mockGetDailyRange.mockResolvedValue({ dates: [], precip: [], wind: [], temp: [] });
 
-    const nonDefault = await loader({ request: buildRequest('http://localhost/?city=Warsaw') });
+    const nonDefault = await plannerLoader({ request: buildRequest('http://localhost/?city=Warsaw') });
     expect(nonDefault.degraded).toBe(true);
 
-    const def = await loader({ request: buildRequest('http://localhost/?city=Seattle') });
+    const def = await plannerLoader({ request: buildRequest('http://localhost/?city=Seattle') });
     expect(def.degraded).toBe(false);
   });
 
@@ -175,7 +172,7 @@ describe('LoaderService.loader', () => {
       return { dates, precip: nulls, wind: nulls, temp: nulls };
     });
 
-    const res = await loader({ request: buildRequest('http://localhost/?city=Seattle') });
+    const res = await plannerLoader({ request: buildRequest('http://localhost/?city=Seattle') });
 
     // Only Seattle & Denver should be included
     expect(Object.keys(res.cityDays || {})).toEqual(['Seattle', 'Denver']);
@@ -192,7 +189,7 @@ describe('LoaderService.loader', () => {
       dates: [startIso], precip: [null], wind: [null], temp: [null],
     }));
 
-    const res = await loader({ request: buildRequest('http://localhost/?week=1') });
+    const res = await plannerLoader({ request: buildRequest('http://localhost/?week=1') });
     const exp = expectedWeekStartEnd(1);
     expect(res.weekStart).toBe(exp.start);
     expect(res.weekEnd).toBe(exp.end);
