@@ -1,5 +1,5 @@
 import { useLoaderData, useNavigation } from "react-router-dom";
-import { LoaderData, Task, DailyWeather } from "../types";
+import { LoaderData, Task, DailyWeather } from "types";
 import TaskCard from "./TaskCard";
 import PlannerHeader from "./PlannerHeader";
 import PlannerFooter from "./PlannerFooter";

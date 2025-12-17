@@ -1,4 +1,4 @@
-import { LoaderData, DEFAULT_CITY } from "../types";
+import { LoaderData, DEFAULT_CITY } from "types";
 
 export function meta({ data }: { data: LoaderData }) {
     return [

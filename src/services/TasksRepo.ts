@@ -1,6 +1,6 @@
-import seed from '../data/tasks.json';
-import type { Task } from '../types';
-import { STORAGE_KEY } from '../store/tasksSlice';
+import seed from 'data/tasks.json';
+import type { Task } from 'types';
+import { STORAGE_KEY } from 'store/tasksSlice';
 
 function reviveAndMigrate(items: any[]): Task[] {
   const today = new Date();

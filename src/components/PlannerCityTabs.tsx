@@ -1,5 +1,5 @@
 import React from 'react';
-import type { DailyWeather, Task } from '../types';
+import type { DailyWeather, Task } from 'types';
 import TaskCard from './TaskCard';
 
 type Props = {

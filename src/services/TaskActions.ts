@@ -1,11 +1,11 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router-dom';
-import { redirect } from '../RouterShim';
-import type { Task, Role, Status } from '../types';
+import { redirect } from 'RouterShim';
+import type { Task, Role, Status } from 'types';
 import { computeRisk } from './HelperService';
-import { geocodeCity } from '../providers/NominatimProfider';
-import { getNextDays } from '../providers/ForecastProvider';
-import { DEFAULT_COORDS } from '../types';
-import { authRepository, taskRepository } from '../repositories/instances';
+import { geocodeCity } from 'providers/NominatimProfider';
+import { getNextDays } from 'providers/ForecastProvider';
+import { DEFAULT_COORDS } from 'types';
+import { authRepository, taskRepository } from 'repositories/instances';
 
 function parseTask(form: FormData, existingId?: string): Task {
   const id = (form.get('id') as string) || existingId || '';

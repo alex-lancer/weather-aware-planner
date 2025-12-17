@@ -1,4 +1,4 @@
-import { DailyWeather } from "../types";
+import { DailyWeather } from "types";
 
 export default function RiskBadge({ risk }: { risk: DailyWeather["risk"] }) {
   const map = {

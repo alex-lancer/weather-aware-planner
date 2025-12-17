@@ -2,7 +2,7 @@ import DayName from "./DayName";
 import RiskBadge from "./RiskBadge";
 import WeatherIndicator from "./WeatherIndicator";
 import TaskListItem from "./TaskListItem";
-import type { DailyWeather, Task } from "../types";
+import type { DailyWeather, Task } from "types";
 
 type TaskCardProps = {
   day: DailyWeather;

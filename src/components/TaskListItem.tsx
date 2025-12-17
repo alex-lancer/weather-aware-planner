@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import BaseButton from "../commonComponents/BaseButton";
-import type { Task } from "../types";
-import { useAppSelector } from "../store";
+import BaseButton from "commonComponents/BaseButton";
+import type { Task } from "types";
+import { useAppSelector } from "store";
 
 type TaskListItemProps = {
   task: Task;

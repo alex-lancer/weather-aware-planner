@@ -1,7 +1,7 @@
-import { store } from "../../store";
-import { addTask, updateTask } from "../../store/tasksSlice";
-import type { Task } from "../../types";
-import type { TaskRepository } from "../TaskRepository";
+import { store } from "store";
+import { addTask, updateTask } from "store/tasksSlice";
+import type { Task } from "types";
+import type { TaskRepository } from "repositories/TaskRepository";
 
 export class ReduxTaskRepository implements TaskRepository {
   getAll(): Task[] {

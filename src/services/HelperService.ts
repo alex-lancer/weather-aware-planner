@@ -1,5 +1,5 @@
-import { LoaderData, Task, DailyWeather, DEFAULT_CITY, DEFAULT_COORDS, Role } from "../types";
-import tasks from "../data/tasks.json";
+import { LoaderData, Task, DailyWeather, DEFAULT_CITY, DEFAULT_COORDS, Role } from "types";
+import tasks from "data/tasks.json";
 
 export function withTimeout<T>(p: Promise<T>, ms: number, signal?: AbortSignal): Promise<T> {
   return new Promise((resolve, reject) => {

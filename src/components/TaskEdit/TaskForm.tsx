@@ -1,12 +1,12 @@
 import React from 'react';
 import { Form, Link, useNavigation } from 'react-router-dom';
-import BaseButton from '../../commonComponents/BaseButton';
-import BaseSelect from '../../commonComponents/BaseSelect';
-import BaseInput from '../../commonComponents/BaseInput';
-import BaseTextarea from '../../commonComponents/BaseTextarea';
-import CityAutocomplete from '../../commonComponents/CityAutocomplete';
-import type { Task, Role, Status } from '../../types';
-import { useAppSelector } from '../../store';
+import BaseButton from 'commonComponents/BaseButton';
+import BaseSelect from 'commonComponents/BaseSelect';
+import BaseInput from 'commonComponents/BaseInput';
+import BaseTextarea from 'commonComponents/BaseTextarea';
+import CityAutocomplete from 'commonComponents/CityAutocomplete';
+import type { Task, Role, Status } from 'types';
+import { useAppSelector } from 'store';
 
 type TaskFormProps = {
   initial?: Partial<Task>;

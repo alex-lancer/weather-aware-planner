@@ -1,6 +1,6 @@
 import { Link, Form } from "react-router-dom";
-import { useAppSelector } from "../store";
-import BaseButton from "../commonComponents/BaseButton";
+import { useAppSelector } from "store";
+import BaseButton from "commonComponents/BaseButton";
 
 type Props = {
   city: string;

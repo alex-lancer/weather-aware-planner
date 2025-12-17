@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import seed from '../data/tasks.json';
-import type { Task } from '../types';
+import seed from 'data/tasks.json';
+import type { Task } from 'types';
 
 export interface TasksState {
   items: Task[];

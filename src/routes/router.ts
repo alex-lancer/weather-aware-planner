@@ -1,12 +1,12 @@
 import React from 'react';
 import { createBrowserRouter, redirect } from 'react-router-dom';
-import Planner from '../components/Planner';
-import NewTask from '../components/TaskEdit/NewTask';
-import EditTask from '../components/TaskEdit/EditTask';
-import { plannerLoader } from '../services/LoaderService';
-import { newTaskAction, editTaskAction, taskLoader, rescheduleTaskAction } from '../services/TaskActions';
-import Login from '../components/Login';
-import { loginAction, logoutAction, requireAuthLoader } from '../services/AuthActions';
+import Planner from 'components/Planner';
+import NewTask from 'components/TaskEdit/NewTask';
+import EditTask from 'components/TaskEdit/EditTask';
+import { plannerLoader } from 'services/LoaderService';
+import { newTaskAction, editTaskAction, taskLoader, rescheduleTaskAction } from 'services/TaskActions';
+import Login from 'components/Login';
+import { loginAction, logoutAction, requireAuthLoader } from 'services/AuthActions';
 
 function RootLayout(props: { children?: React.ReactNode }) {
   return React.createElement(

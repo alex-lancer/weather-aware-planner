@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "es5",
     "downlevelIteration": true,
+    "baseUrl": "src",
     "lib": [
       "dom",
       "dom.iterable",

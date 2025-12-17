@@ -1,8 +1,8 @@
-import { LoaderData, Task, DailyWeather, DEFAULT_CITY, DEFAULT_COORDS, Role } from "../types";
-import { computeRisk } from "./HelperService";
-import { geocodeCity } from "../providers/NominatimProfider";
-import { getDailyRange } from "../providers/ForecastProvider";
-import { taskRepository } from "../repositories/instances";
+import { LoaderData, Task, DailyWeather, DEFAULT_CITY, DEFAULT_COORDS, Role } from "types";
+import { computeRisk } from "services/HelperService";
+import { geocodeCity } from "providers/NominatimProfider";
+import { getDailyRange } from "providers/ForecastProvider";
+import { taskRepository } from "repositories/instances";
 
 export async function plannerLoader({ request }: { request: Request }): Promise<LoaderData> {
   const url = new URL(request.url);

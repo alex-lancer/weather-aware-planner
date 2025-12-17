@@ -1,7 +1,7 @@
 import React from 'react';
 import { Form, Link, useActionData, useNavigation, useSearchParams } from 'react-router-dom';
-import BaseInput from '../commonComponents/BaseInput';
-import BaseButton from '../commonComponents/BaseButton';
+import BaseInput from 'commonComponents/BaseInput';
+import BaseButton from 'commonComponents/BaseButton';
 
 export default function Login() {
   const nav = useNavigation();

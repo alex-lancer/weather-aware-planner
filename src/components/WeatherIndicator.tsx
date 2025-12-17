@@ -1,4 +1,4 @@
-import type { DailyWeather } from "../types";
+import type { DailyWeather } from "types";
 
 type WeatherIndicatorProps = {
   day: Pick<DailyWeather, "precipProb" | "windMax" | "tempMin">;
