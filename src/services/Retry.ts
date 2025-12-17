@@ -55,3 +55,12 @@ export async function withRetry<T>(
     }
   }
 }
+
+export function withRetryFn<Args extends any[], R>(
+  fn: (...args: Args) => Promise<R> | R,
+  opts: RetryOptions = {}
+): (...args: Args) => Promise<R> {
+  return async (...args: Args): Promise<R> => {
+    return withRetry<R>(() => Promise.resolve(fn(...args)), opts);
+  };
+}

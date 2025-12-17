@@ -2,7 +2,8 @@ import { LoaderData, Task, DailyWeather, DEFAULT_CITY, DEFAULT_COORDS, Role } fr
 import { computeRisk } from "services/HelperService";
 import { geocodeCity } from "providers/NominatimProfider";
 import { getDailyRange } from "providers/ForecastProvider";
-import { withRetry } from "services/Retry";
+import { withRetryFn } from "services/Retry";
+import { cacheWithLocalStorage } from "services/LocalCache";
 import { taskRepository } from "repositories/instances";
 import { defer } from "RouterShim";
 
@@ -60,16 +61,15 @@ function fetchCitiesInWeek(tasks: Task[], weekStartIso: string) {
   ));
 }
 
+const getDailyRangeCached = cacheWithLocalStorage(withRetryFn(getDailyRange));
+
 async function fetchDaysForCoords(
   coords: { lat: number; lon: number },
   weekStartIso: string,
   weekEndIso: string
 ): Promise<DailyWeather[]> {
   try {
-    const { dates, precip, wind, temp } = await withRetry(
-      () => getDailyRange(coords, weekStartIso, weekEndIso),
-      { retries: 1, initialDelayMs: 0, factor: 1, maxDelayMs: 0 }
-    );
+    const { dates, precip, wind, temp } = await getDailyRangeCached(coords, weekStartIso, weekEndIso);
 
     return dates.map((dt: string, i: number) => {
       const d = {
