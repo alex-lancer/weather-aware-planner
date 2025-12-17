@@ -2,7 +2,7 @@ import { LoaderData, Task, DailyWeather, DEFAULT_CITY, DEFAULT_COORDS, Role } fr
 import { computeRisk } from "./HelperService";
 import { geocodeCity } from "../providers/NominatimProfider";
 import { getDailyRange } from "../providers/ForecastProvider";
-import { TaskRepository } from "./TaskRepository";
+import { TaskRepository } from "../repositories/TaskRepository";
 
 export function makeLoader(repo: { tasks: TaskRepository }) {
   return async function loader({ request }: { request: Request }): Promise<LoaderData> {

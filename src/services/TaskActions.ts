@@ -7,6 +7,10 @@ import { computeRisk } from './HelperService';
 import { geocodeCity } from '../providers/NominatimProfider';
 import { getNextDays } from '../providers/ForecastProvider';
 import { DEFAULT_COORDS } from '../types';
+import type { TaskRepository } from '../repositories/TaskRepository';
+import type { AuthRepository } from '../repositories/AuthRepository';
+import { ReduxTaskRepository } from '../repositories/adapters/ReduxTaskRepository';
+import { ReduxAuthRepository } from '../repositories/adapters/ReduxAuthRepository';
 
 function parseTask(form: FormData, existingId?: string): Task {
   const id = (form.get('id') as string) || existingId || '';
@@ -87,38 +91,48 @@ export async function taskLoader({ params }: LoaderFunctionArgs) {
  * Reschedule a task to the next acceptable-risk day for the given city.
  * Preference order: low risk first, then medium. If none found, keep as-is.
  */
-export async function rescheduleTaskAction({ request, params }: ActionFunctionArgs) {
-  const id = params.id as string;
-  const fd = await request.formData();
+export function makeRescheduleTaskAction(deps: {
+  auth: AuthRepository;
+  tasks: TaskRepository;
+}) {
+  return async function rescheduleTaskAction({ request, params }: ActionFunctionArgs) {
+    const id = params.id as string;
+    const fd = await request.formData();
 
-  if (!id) throw new Error('Missing id');
+    if (!id) throw new Error('Missing id');
 
-  const stateBefore = store.getState();
-  if (!stateBefore.auth?.currentUser) {
-    return redirectToLogin(fd);
-  }
+    const currentUser = deps.auth.getCurrentUser();
+    if (!currentUser) {
+      return redirectToLogin(fd);
+    }
 
-  const state = store.getState();
-  const existing = state.tasks.items.find((x: Task) => x.id === id);
-  if (!existing) throw new Response('Not found', { status: 404 });
+    const allTasks = deps.tasks.getAll();
+    const existing = allTasks.find((x: Task) => x.id === id);
+    if (!existing) throw new Response('Not found', { status: 404 });
 
-  if (!canRescheduleTask(stateBefore.auth?.currentUser)) {
-    return redirectToDashboard(fd);
-  }
+    if (!canRescheduleTask(currentUser)) {
+      return redirectToDashboard(fd);
+    }
 
-  const { role, city, weekNum } = fetchDataFromForm(fd, existing);
-  const coords = (await geocodeCity(city)) || DEFAULT_COORDS;
+    const { role, city, weekNum } = fetchDataFromForm(fd, existing);
+    const coords = (await geocodeCity(city)) || DEFAULT_COORDS;
 
-  // Fetch 7-day forecast (starting today) via provider
-  const { risks, dates} = await getNextDaysRisks(coords);
-  const newDate = chooseBestDate(risks, dates);
-  if (newDate) {
-    const updated: Task = { ...existing, date: newDate };
-    store.dispatch(updateTask(updated));
-  }
+    // Fetch 7-day forecast (starting today) via provider
+    const { risks, dates } = await getNextDaysRisks(coords);
+    const newDate = chooseBestDate(risks, dates);
+    if (newDate) {
+      const updated: Task = { ...existing, date: newDate };
+      deps.tasks.update(updated);
+    }
 
-  return returnToDashboard(city, role, weekNum);
+    return returnToDashboard(city, role, weekNum);
+  };
 }
+
+export const rescheduleTaskAction = makeRescheduleTaskAction({
+  auth: new ReduxAuthRepository(),
+  tasks: new ReduxTaskRepository(),
+});
 
 async function redirectToLogin(fdTmp: FormData) {
   const roleTmp = (fdTmp.get('role') as Role) || 'manager';
