@@ -42,54 +42,17 @@ export async function plannerLoader({ request }: { request: Request }): Promise<
   });
 }
 
-// Deferred loader version to enable Suspense in the Planner component.
-// It returns base data immediately and defers secondary city forecasts (cityDays).
-export async function plannerDeferLoader({ request }: { request: Request }) {
-  const url = new URL(request.url);
-  const role = (url.searchParams.get("role") as Role) || "manager";
-  const city = url.searchParams.get("city") || DEFAULT_CITY;
-  const weekParam = Number(url.searchParams.get("week") ?? "0");
-
-  const { weekStartIso, weekEndIso, week } = calcBaseDays(weekParam);
-  const { coords, degraded } = await tryGeocodeCity(city);
-
-  // Keep main city days awaited so we can render the base view instantly after loader resolves
-  const days = await fetchDaysForCoords(coords, weekStartIso, weekEndIso);
-
-  const allTasks: Task[] = taskRepository.getAll();
-  const citiesInWeek = fetchCitiesInWeek(allTasks, weekStartIso);
-
-  // Defer fetching of other cities' weather
-  const cityDaysPromise: Promise<Record<string, DailyWeather[]>> = (async () => {
-    const entries = await Promise.all(
-      citiesInWeek.map(async (c) => [c, await fetchDaysForCity(c, weekStartIso, weekEndIso)] as const)
-    );
-    return Object.fromEntries(entries);
-  })();
-
-  return defer({
-    role,
-    city,
-    coords,
-    days,
-    tasks: allTasks,
-    degraded,
-    week,
-    weekStart: weekStartIso,
-    weekEnd: weekEndIso,
-    cityDays: cityDaysPromise,
-  });
-}
-
 
 function fetchCitiesInWeek(tasks: Task[], weekStartIso: string) {
   const isoInWeek = new Set<string>();
   const start = new Date(weekStartIso + "T00:00:00");
+
   for (let i = 0; i < 7; i++) {
     const d = new Date(start);
     d.setDate(start.getDate() + i);
     isoInWeek.add(d.toISOString().slice(0, 10));
   }
+
   return Array.from(new Set(
     tasks
       .filter((t) => isoInWeek.has(new Date(t.date).toISOString().slice(0, 10)))
@@ -107,6 +70,7 @@ async function fetchDaysForCoords(
       () => getDailyRange(coords, weekStartIso, weekEndIso),
       { retries: 1, initialDelayMs: 0, factor: 1, maxDelayMs: 0 }
     );
+
     return dates.map((dt: string, i: number) => {
       const d = {
         date: dt,
@@ -120,6 +84,7 @@ async function fetchDaysForCoords(
     // Fallback placeholders
     const out: DailyWeather[] = [];
     const start = new Date(weekStartIso + "T00:00:00");
+
     for (let i = 0; i < 7; i++) {
       const nd = new Date(start);
       nd.setDate(start.getDate() + i);
@@ -131,6 +96,7 @@ async function fetchDaysForCoords(
         risk: "low",
       });
     }
+
     return out;
   }
 }
@@ -178,10 +144,16 @@ async function tryGeocodeCity(city: string): Promise<{ coords: { lat: number; lo
       geocodePromise,
       new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500)),
     ]);
-    if (c) coords = c;
-    else if (city.toLowerCase() !== DEFAULT_CITY.toLowerCase()) degraded = true;
+
+    if (c) {
+      coords = c;
+    } else if (city.toLowerCase() !== DEFAULT_CITY.toLowerCase()) {
+      degraded = true;
+    }
   } catch {
-    if (city.toLowerCase() !== DEFAULT_CITY.toLowerCase()) degraded = true;
+    if (city.toLowerCase() !== DEFAULT_CITY.toLowerCase()) {
+      degraded = true;
+    }
   }
   return { coords, degraded };
 }

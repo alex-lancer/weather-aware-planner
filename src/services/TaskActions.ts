@@ -20,9 +20,11 @@ function parseTask(form: FormData, existingId?: string): Task {
   const statusIn = String(form.get('status') || '').trim() as Status;
   const status: Status = (statusIn === 'ToDo' || statusIn === 'InProgress' || statusIn === 'Done') ? statusIn : 'ToDo';
   const date = dateStr ? new Date(dateStr + 'T00:00:00') : null;
+
   if (!title || !city || !date || Number.isNaN(date.getTime()) || Number.isNaN(durationHours)) {
     throw new Error('Invalid form data');
   }
+
   return {
     id: id || 'tmp',
     title,
@@ -39,10 +41,11 @@ function parseTask(form: FormData, existingId?: string): Task {
 export async function newTaskAction({ request }: ActionFunctionArgs) {
   const fd = await request.formData();
   const t = parseTask(fd);
-  // create new id
   const createdId = (globalThis as any).crypto?.randomUUID?.() ?? ('t' + Math.random().toString(36).slice(2, 9));
   const created: Task = { ...t, id: createdId };
+
   taskRepository.add(created);
+
   return redirect('/');
 }
 
@@ -62,6 +65,7 @@ export async function editTaskAction({ request }: ActionFunctionArgs) {
   const t = parseTask(fd, id);
   const currentUser = authRepository.getCurrentUser();
   let updated: Task;
+
   if (currentUser?.role === 'technician') {
     updated = { ...existing, status: t.status, notes: t.notes };
   } else {
@@ -77,9 +81,11 @@ export async function taskLoader({ params }: LoaderFunctionArgs) {
   const id = params.id as string;
   const allTasks = taskRepository.getAll();
   const task = allTasks.find((x: Task) => x.id === id);
+
   if (!task) {
     throw new Response('Not found', { status: 404 });
   }
+
   return task;
 }
 
@@ -125,10 +131,13 @@ async function redirectToLogin(fdTmp: FormData) {
   const cityTmp = String(fdTmp.get('city') || '').trim();
   const weekParamTmp = String(fdTmp.get('week') ?? '').trim();
   const paramsOutTmp = new URLSearchParams();
+
   if (cityTmp) paramsOutTmp.set('city', cityTmp);
   if (roleTmp) paramsOutTmp.set('role', roleTmp);
   if (weekParamTmp !== '') paramsOutTmp.set('week', weekParamTmp);
+
   const from = '/?' + paramsOutTmp.toString();
+
   return redirect('/login?from=' + encodeURIComponent(from));
 }
 
@@ -139,7 +148,11 @@ function canRescheduleTask(currentUser: { role: string } | null | undefined) {
 function redirectToDashboard(formData: FormData) {
   const weekParamTmp = String(formData.get('week') ?? '').trim();
   const paramsOutTmp = new URLSearchParams();
-  if (weekParamTmp !== '') paramsOutTmp.set('week', weekParamTmp);
+
+  if (weekParamTmp !== '') {
+    paramsOutTmp.set('week', weekParamTmp);
+  }
+
   return redirect('/' + (paramsOutTmp.toString() ? ('?' + paramsOutTmp.toString()) : ''));
 }
 
@@ -158,8 +171,10 @@ async function getNextDaysRisks(coords: any) {
   let precip: Array<number | null> = [];
   let wind: Array<number | null> = [];
   let temp: Array<number | null> = [];
+
   try {
     const series = await withRetry(() => getNextDays(coords, 7));
+
     dates = series.dates;
     precip = series.precip;
     wind = series.wind;

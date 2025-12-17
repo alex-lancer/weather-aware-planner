@@ -46,7 +46,11 @@ export async function withRetry<T>(
         throw err;
       }
       const toWait = maxDelayMs != null ? Math.min(delay, maxDelayMs) : delay;
-      if (toWait > 0) await sleep(toWait);
+
+      if (toWait > 0) {
+        await sleep(toWait);
+      }
+
       delay = Math.max(0, Math.floor(delay * factor));
     }
   }

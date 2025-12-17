@@ -21,10 +21,10 @@ function seedUsers(): User[] {
 }
 
 function loadInitial(): AuthState {
-  try {
-    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as AuthState;
-  } catch {}
+  const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+
+  if (raw) return JSON.parse(raw) as AuthState;
+
   return { currentUser: null, users: seedUsers() };
 }
 
@@ -37,12 +37,13 @@ const authSlice = createSlice({
     login(state: AuthState, action: PayloadAction<{ username: string; password: string }>) {
       const { username, password } = action.payload;
       const user = state.users.find(u => u.username === username && u.password === password) || null;
+
       state.currentUser = user;
-      try { localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(state)); } catch {}
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(state));
     },
     logout(state: AuthState) {
       state.currentUser = null;
-      try { localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(state)); } catch {}
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(state));
     },
   },
 });

@@ -11,11 +11,13 @@ export const STORAGE_KEY = 'waw.tasks.v1';
 function reviveAndMigrate(items: any[]): Task[] {
   const today = new Date();
   function nextDateForWeekday(weekday: number): Date {
-    const d = new Date(today);
-    const diff = (weekday - d.getDay() + 7) % 7;
-    d.setDate(d.getDate() + diff);
-    d.setHours(0, 0, 0, 0);
-    return d;
+    const date = new Date(today);
+    const diff = (weekday - date.getDay() + 7) % 7;
+
+    date.setDate(date.getDate() + diff);
+    date.setHours(0, 0, 0, 0);
+
+    return date;
   }
   return (items || []).map((it: any) => {
     let date: Date | null = null;
@@ -27,6 +29,7 @@ function reviveAndMigrate(items: any[]): Task[] {
     if (!date || Number.isNaN(date.getTime())) {
       date = new Date();
     }
+
     const t: Task = {
       id: String(it.id || ''),
       title: String(it.title || ''),

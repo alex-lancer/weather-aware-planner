@@ -15,14 +15,19 @@ export function toISO(d: Date): string {
 export function groupTasksByDateCity(tasks: Task[], days: DailyWeather[]): Map<string, Map<string, Task[]>> {
   const grouped = new Map<string, Map<string, Task[]>>();
   const visibleIso = new Set(days.map((d) => d.date));
+
   for (const t of tasks) {
     const iso = toISO(new Date(t.date));
+
     if (!visibleIso.has(iso)) continue;
+
     const byCity = grouped.get(iso) ?? new Map<string, Task[]>();
     const arr = byCity.get(t.city) ?? [];
+
     byCity.set(t.city, [...arr, t]);
     grouped.set(iso, byCity);
   }
+
   return grouped;
 }
 
@@ -36,5 +41,6 @@ export function deriveCitiesForVisibleWeek(tasks: Task[], days: DailyWeather[]):
       .filter((t) => visibleIso.has(toISO(new Date(t.date))))
       .map((t) => t.city)
   ));
+
   return cities.sort((a, b) => a.localeCompare(b));
 }
