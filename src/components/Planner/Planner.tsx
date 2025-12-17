@@ -4,6 +4,7 @@ import TaskCard from "components/TaskCard";
 import PlannerHeader from "./PlannerHeader";
 import PlannerFooter from "./PlannerFooter";
 import PlannerCityTabs from "./PlannerCityTabs";
+import { deriveCitiesForVisibleWeek, groupTasksByDateCity } from "services/PlannerService";
 
 export default function Planner() {
   const { city, coords, days, tasks, degraded, week, weekStart, weekEnd, cityDays } = useLoaderData<LoaderData>();
@@ -11,31 +12,10 @@ export default function Planner() {
   const isSubmitting = nav.state === "submitting" || nav.state === "loading";
 
   // Build nested map for visible week: isoDate -> city -> Task[]
-  const grouped = new Map<string, Map<string, Task[]>>();
-  const toISO = (d: Date) => {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
-  };
-  const visibleIso = new Set(days.map((d) => d.date));
-  for (const t of tasks) {
-    const iso = toISO(new Date(t.date));
-    if (!visibleIso.has(iso)) continue;
-    const byCity = grouped.get(iso) ?? new Map<string, Task[]>();
-    const arr = byCity.get(t.city) ?? [];
-    byCity.set(t.city, [...arr, t]);
-    grouped.set(iso, byCity);
-  }
+  const grouped = groupTasksByDateCity(tasks, days);
 
   // Derive sorted list of cities that have tasks in the visible week
-  const cities = Array.from(
-    new Set(
-      tasks
-        .filter((t) => visibleIso.has(toISO(new Date(t.date))))
-        .map((t) => t.city)
-    )
-  ).sort((a, b) => a.localeCompare(b));
+  const cities = deriveCitiesForVisibleWeek(tasks, days);
   return (
     <main className="pt-6 pb-20 px-4 max-w-3xl mx-auto">
       <PlannerHeader
