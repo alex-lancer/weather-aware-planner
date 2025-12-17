@@ -4,7 +4,7 @@ import Planner from '../components/Planner';
 import NewTask from '../components/dashboard/NewTask';
 import EditTask from '../components/dashboard/EditTask';
 import { makeLoader } from '../services/LoaderService';
-import { ReduxTaskRepository } from '../services/adapters/ReduxTaskRepository';
+import { ReduxTaskRepository } from '../repositories/adapters/ReduxTaskRepository';
 import { newTaskAction, editTaskAction, taskLoader, rescheduleTaskAction } from '../services/TaskActions';
 import Login from '../components/Login';
 import { loginAction, logoutAction, requireAuthLoader } from '../services/AuthActions';

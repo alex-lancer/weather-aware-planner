@@ -50,32 +50,39 @@ export async function newTaskAction({ request }: ActionFunctionArgs) {
   return redirect('/');
 }
 
-export async function editTaskAction({ request }: ActionFunctionArgs) {
-  const fd = await request.formData();
-  const id = String(fd.get('id') || '');
+function makeEditTaskAction(deps: { auth: AuthRepository; tasks: TaskRepository }) {
+  return async function editTaskAction({ request }: ActionFunctionArgs) {
+    const fd = await request.formData();
+    const id = String(fd.get('id') || '');
 
-  if (!id) throw new Error('Missing id');
+    if (!id) throw new Error('Missing id');
 
-  const state = store.getState();
-  const existing = state.tasks.items.find((x: Task) => x.id === id);
+    const allTasks = deps.tasks.getAll();
+    const existing = allTasks.find((x: Task) => x.id === id);
 
-  if (!existing) {
-    throw new Response('Not found', { status: 404 });
-  }
+    if (!existing) {
+      throw new Response('Not found', { status: 404 });
+    }
 
-  const t = parseTask(fd, id);
-  const currentUser = state.auth?.currentUser;
-  let updated: Task;
-  if (currentUser?.role === 'technician') {
-    updated = { ...existing, status: t.status, notes: t.notes };
-  } else {
-    updated = { ...t, id };
-  }
+    const t = parseTask(fd, id);
+    const currentUser = deps.auth.getCurrentUser();
+    let updated: Task;
+    if (currentUser?.role === 'technician') {
+      updated = { ...existing, status: t.status, notes: t.notes };
+    } else {
+      updated = { ...t, id };
+    }
 
-  store.dispatch(updateTask(updated));
+    deps.tasks.update(updated);
 
-  return redirect('/');
+    return redirect('/');
+  };
 }
+
+export const editTaskAction = makeEditTaskAction({
+  auth: new ReduxAuthRepository(),
+  tasks: new ReduxTaskRepository(),
+});
 
 export async function taskLoader({ params }: LoaderFunctionArgs) {
   const id = params.id as string;
@@ -91,7 +98,7 @@ export async function taskLoader({ params }: LoaderFunctionArgs) {
  * Reschedule a task to the next acceptable-risk day for the given city.
  * Preference order: low risk first, then medium. If none found, keep as-is.
  */
-export function makeRescheduleTaskAction(deps: {
+function makeRescheduleTaskAction(deps: {
   auth: AuthRepository;
   tasks: TaskRepository;
 }) {
