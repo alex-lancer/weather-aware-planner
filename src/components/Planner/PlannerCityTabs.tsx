@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState, KeyboardEvent } from 'react';
 import type { DailyWeather, Task } from 'types';
 import TaskCard from 'components/TaskCard';
 
@@ -12,8 +12,10 @@ type Props = {
 };
 
 export default function PlannerCityTabs({ cities, days, grouped, week, isSubmitting, cityDays }: Props) {
-  const [active, setActive] = React.useState<string>(cities[0] ?? '');
-  React.useEffect(() => {
+  const [active, setActive] = useState<string>(cities[0] ?? '');
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  useEffect(() => {
     if (!active || !cities.includes(active)) {
       setActive(cities[0] ?? '');
     }
@@ -23,24 +25,63 @@ export default function PlannerCityTabs({ cities, days, grouped, week, isSubmitt
     return <p className="text-sm text-gray-500">No tasks in this week</p>;
   }
 
+  const onTabsKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    const idx = cities.indexOf(active);
+
+    if (idx < 0) return;
+    e.preventDefault();
+
+    if (e.key === 'ArrowRight') {
+      const next = (idx + 1) % cities.length;
+
+      setActive(cities[next]);
+      tabRefs.current[next]?.focus();
+    } else if (e.key === 'ArrowLeft') {
+      const prev = (idx - 1 + cities.length) % cities.length;
+
+      setActive(cities[prev]);
+      tabRefs.current[prev]?.focus();
+    } else if (e.key === 'Home') {
+      setActive(cities[0]);
+      tabRefs.current[0]?.focus();
+    } else if (e.key === 'End') {
+      setActive(cities[cities.length - 1]);
+      tabRefs.current[cities.length - 1]?.focus();
+    }
+  };
+
   return (
     <div className="space-y-3">
       {/* Tabs header */}
-      <div className="flex gap-2 overflow-x-auto">
+      <div
+        className="flex gap-2 overflow-x-auto"
+        role="tablist"
+        aria-label="Cities"
+        onKeyDown={onTabsKeyDown}
+      >
         {cities.map((c) => {
           const isActive = c === active;
+          const tabId = `tab-${c}`;
+          const panelId = `tabpanel-${c}`;
           return (
             <button
               key={c}
               type="button"
+              id={tabId}
               onClick={() => setActive(c)}
+              role="tab"
+              aria-selected={isActive}
+              aria-controls={panelId}
               className={[
                 'px-3 py-1.5 rounded-full text-sm whitespace-nowrap border',
                 isActive
                   ? 'bg-blue-600 text-white border-blue-600'
                   : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50',
               ].join(' ')}
-              aria-pressed={isActive}
+              ref={(el) => {
+                const i = cities.indexOf(c);
+                tabRefs.current[i] = el;
+              }}
             >
               {c}
             </button>
@@ -50,7 +91,12 @@ export default function PlannerCityTabs({ cities, days, grouped, week, isSubmitt
 
       {/* Active city content: stack cards in one column for tablet/mobile view */}
       {active && (
-        <section className="grid grid-cols-1 gap-3">
+        <section
+          className="grid grid-cols-1 gap-3"
+          role="tabpanel"
+          id={`tabpanel-${active}`}
+          aria-labelledby={`tab-${active}`}
+        >
           {(cityDays?.[active] ?? days).map((d) => {
             const dayCityTasks = grouped.get(d.date)?.get(active) ?? [];
             return (

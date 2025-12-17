@@ -3,7 +3,12 @@ import React from "react";
 export default function PlannerSkeleton() {
   // Skeleton UI matching Planner layout
   return (
-    <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen overflow-x-auto">
+    <div
+      className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen overflow-x-auto"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+    >
       <div className="px-4 sm:px-6 space-y-6 animate-pulse">
         {/* Mobile/Tablet: Tabs area */}
         <div className="block lg:hidden">

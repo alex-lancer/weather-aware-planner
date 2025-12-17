@@ -14,9 +14,14 @@ export default function Login() {
     <div className="p-4 max-w-sm mx-auto">
       <h2 className="text-lg font-semibold mb-4">Sign in</h2>
       {actionData?.error && (
-        <div className="mb-3 text-sm text-red-600">{actionData.error}</div>
+        <div className="mb-3 text-sm text-red-600" role="alert">{actionData.error}</div>
       )}
-      <Form method="post" action={`/login?from=${encodeURIComponent(from)}`} className="space-y-3">
+      <Form
+        method="post"
+        action={`/login?from=${encodeURIComponent(from)}`}
+        className="space-y-3"
+        aria-busy={isSubmitting}
+      >
         <div>
           <label className="block text-sm font-medium mb-1" htmlFor="username">Username</label>
           <BaseInput id="username" name="username" autoComplete="username" required placeholder="e.g. manager1" />

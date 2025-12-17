@@ -20,6 +20,7 @@ export default function CityAutocomplete({
   onChange,
   onBlur,
   onKeyDown,
+  id,
   ...rest
 }: CityAutocompleteProps) {
   const [value, setValue] = React.useState<string>(defaultValue);
@@ -114,11 +115,15 @@ export default function CityAutocomplete({
   };
 
   const inputClasses = [baseInputClass, className].filter(Boolean).join(' ');
+  const listboxId = React.useId();
+  const autoId = React.useId();
+  const inputId = id ?? autoId;
 
   return (
     <div ref={rootRef} className="relative flex-1">
       <input
         type="text"
+        id={inputId}
         name={name}
         value={value}
         onChange={handleChange}
@@ -127,10 +132,22 @@ export default function CityAutocomplete({
         placeholder={placeholder}
         className={inputClasses}
         autoComplete="off"
+        role="combobox"
+        aria-autocomplete="list"
+        aria-expanded={open}
+        aria-controls={open ? listboxId : undefined}
+        aria-activedescendant={highlight >= 0 && open ? `${listboxId}-opt-${highlight}` : undefined}
+        aria-haspopup="listbox"
         {...rest}
       />
       {open && (
-        <ul className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-lg border bg-white text-sm shadow-lg dark:bg-neutral-900 dark:border-neutral-700">
+        <ul
+          id={listboxId}
+          role="listbox"
+          className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-lg border bg-white text-sm shadow-lg dark:bg-neutral-900 dark:border-neutral-700"
+          aria-label="City suggestions"
+          aria-busy={loading}
+        >
           {loading && items.length === 0 ? (
             <li className="px-3 py-2 text-gray-500">Searching…</li>
           ) : items.length === 0 ? (
@@ -139,6 +156,7 @@ export default function CityAutocomplete({
             items.map((s, i) => (
               <li
                 key={s}
+                id={`${listboxId}-opt-${i}`}
                 className={[
                   'px-3 py-2 cursor-pointer',
                   i === highlight ? 'bg-blue-50 dark:bg-blue-900/30' : '',

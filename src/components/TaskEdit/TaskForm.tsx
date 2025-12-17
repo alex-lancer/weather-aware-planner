@@ -115,7 +115,7 @@ export default function TaskForm({ initial, mode }: TaskFormProps) {
         </div>
         <div>
           <label className="block text-sm font-medium mb-1" htmlFor="city">City</label>
-          <CityAutocomplete name="city" defaultValue={initial?.city ?? ''} disabled={isTechEdit as any} />
+          <CityAutocomplete id="city" name="city" defaultValue={initial?.city ?? ''} disabled={isTechEdit as any} />
           {isTechEdit && (
             <input type="hidden" name="city" value={initial?.city ?? ''} />
           )}

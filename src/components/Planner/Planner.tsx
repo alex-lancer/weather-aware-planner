@@ -21,7 +21,7 @@ export default function Planner() {
   // Derive sorted list of cities that have tasks in the visible week
   const cities = deriveCitiesForVisibleWeek(tasks, days);
   return (
-    <main className="pt-6 pb-20 px-4 max-w-3xl mx-auto">
+    <main id="main-content" className="pt-6 pb-20 px-4 max-w-3xl mx-auto" aria-busy={isSubmitting}>
       <PlannerHeader
         city={city}
         coords={coords}

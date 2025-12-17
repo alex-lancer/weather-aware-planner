@@ -7,7 +7,10 @@ export default function RiskBadge({ risk }: { risk: DailyWeather["risk"] }) {
     high: "bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300",
   } as const;
   return (
-    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${map[risk]}`}>
+    <span
+      className={`px-2 py-0.5 rounded-full text-xs font-medium ${map[risk]}`}
+      aria-label={`Risk level: ${risk}`}
+    >
       {risk}
     </span>
   );
