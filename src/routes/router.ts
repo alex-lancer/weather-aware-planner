@@ -4,7 +4,7 @@ import Planner from '../components/Planner';
 import NewTask from '../components/dashboard/NewTask';
 import EditTask from '../components/dashboard/EditTask';
 import { makeLoader } from '../services/LoaderService';
-import { ReduxTaskRepository } from '../repositories/adapters/ReduxTaskRepository';
+import { taskRepository } from '../repositories/instances';
 import { newTaskAction, editTaskAction, taskLoader, rescheduleTaskAction } from '../services/TaskActions';
 import Login from '../components/Login';
 import { loginAction, logoutAction, requireAuthLoader } from '../services/AuthActions';
@@ -41,7 +41,7 @@ export const router = createBrowserRouter([
       if (result) {
         return result;
       }
-      const plannerLoader = makeLoader({ tasks: new ReduxTaskRepository() });
+      const plannerLoader = makeLoader({ tasks: taskRepository });
       return await plannerLoader(args);
     },
     errorElement,

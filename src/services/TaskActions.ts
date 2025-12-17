@@ -9,8 +9,7 @@ import { getNextDays } from '../providers/ForecastProvider';
 import { DEFAULT_COORDS } from '../types';
 import type { TaskRepository } from '../repositories/TaskRepository';
 import type { AuthRepository } from '../repositories/AuthRepository';
-import { ReduxTaskRepository } from '../repositories/adapters/ReduxTaskRepository';
-import { ReduxAuthRepository } from '../repositories/adapters/ReduxAuthRepository';
+import { authRepository, taskRepository } from '../repositories/instances';
 
 function parseTask(form: FormData, existingId?: string): Task {
   const id = (form.get('id') as string) || existingId || '';
@@ -80,8 +79,8 @@ function makeEditTaskAction(deps: { auth: AuthRepository; tasks: TaskRepository 
 }
 
 export const editTaskAction = makeEditTaskAction({
-  auth: new ReduxAuthRepository(),
-  tasks: new ReduxTaskRepository(),
+  auth: authRepository,
+  tasks: taskRepository,
 });
 
 export async function taskLoader({ params }: LoaderFunctionArgs) {
@@ -137,8 +136,8 @@ function makeRescheduleTaskAction(deps: {
 }
 
 export const rescheduleTaskAction = makeRescheduleTaskAction({
-  auth: new ReduxAuthRepository(),
-  tasks: new ReduxTaskRepository(),
+  auth: authRepository,
+  tasks: taskRepository,
 });
 
 async function redirectToLogin(fdTmp: FormData) {
