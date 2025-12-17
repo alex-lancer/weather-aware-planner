@@ -4,6 +4,7 @@ import type { Task, Role, Status } from 'types';
 import { computeRisk } from './HelperService';
 import { geocodeCity } from 'providers/NominatimProfider';
 import { getNextDays } from 'providers/ForecastProvider';
+import { withRetry } from 'services/Retry';
 import { DEFAULT_COORDS } from 'types';
 import { authRepository, taskRepository } from 'repositories/instances';
 
@@ -158,7 +159,7 @@ async function getNextDaysRisks(coords: any) {
   let wind: Array<number | null> = [];
   let temp: Array<number | null> = [];
   try {
-    const series = await getNextDays(coords, 7);
+    const series = await withRetry(() => getNextDays(coords, 7));
     dates = series.dates;
     precip = series.precip;
     wind = series.wind;

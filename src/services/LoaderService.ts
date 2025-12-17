@@ -2,6 +2,7 @@ import { LoaderData, Task, DailyWeather, DEFAULT_CITY, DEFAULT_COORDS, Role } fr
 import { computeRisk } from "services/HelperService";
 import { geocodeCity } from "providers/NominatimProfider";
 import { getDailyRange } from "providers/ForecastProvider";
+import { withRetry } from "services/Retry";
 import { taskRepository } from "repositories/instances";
 
 export async function plannerLoader({ request }: { request: Request }): Promise<LoaderData> {
@@ -48,7 +49,9 @@ async function fetchDaysForCoords(
   weekEndIso: string
 ): Promise<DailyWeather[]> {
   try {
-    const { dates, precip, wind, temp } = await getDailyRange(coords, weekStartIso, weekEndIso);
+    const { dates, precip, wind, temp } = await withRetry(
+      () => getDailyRange(coords, weekStartIso, weekEndIso)
+    );
     return dates.map((dt: string, i: number) => {
       const d = {
         date: dt,

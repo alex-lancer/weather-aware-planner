@@ -25,14 +25,10 @@ export async function getDailyRange(coords: Coords, startIso: string, endIso: st
   api.searchParams.set("timezone", "auto");
   api.searchParams.set("start_date", startIso);
   api.searchParams.set("end_date", endIso);
-  try {
-    const res = await fetch(api.toString());
-    if (!res.ok) throw new Error("forecast failed");
-    const data = await res.json();
-    return parseDaily(data);
-  } catch {
-    return { dates: [], precip: [], wind: [], temp: [] };
-  }
+  const res = await fetch(api.toString());
+  if (!res.ok) throw new Error("forecast failed");
+  const data = await res.json();
+  return parseDaily(data);
 }
 
 export async function getNextDays(coords: Coords, days: number = 7): Promise<Series> {
@@ -42,12 +38,8 @@ export async function getNextDays(coords: Coords, days: number = 7): Promise<Ser
   api.searchParams.set("daily", "precipitation_probability_max,temperature_2m_min,wind_speed_10m_max");
   api.searchParams.set("timezone", "auto");
   api.searchParams.set("forecast_days", String(days));
-  try {
-    const res = await fetch(api.toString());
-    if (!res.ok) throw new Error("forecast failed");
-    const data = await res.json();
-    return parseDaily(data);
-  } catch {
-    return { dates: [], precip: [], wind: [], temp: [] };
-  }
+  const res = await fetch(api.toString());
+  if (!res.ok) throw new Error("forecast failed");
+  const data = await res.json();
+  return parseDaily(data);
 }
