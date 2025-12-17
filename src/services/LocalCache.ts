@@ -52,7 +52,10 @@ function buildKey<Args extends any[]>(
   return namespacedKey(`${fnName}(${safeArgs})`, opt);
 }
 
-function namespacedKey(base: string, opt?: LocalCacheOptions): string {
+function namespacedKey(
+  base: string,
+  opt?: { namespace?: string; version?: string | number }
+): string {
   const ns = opt?.namespace ? `${opt.namespace}:` : '';
   const ver = opt?.version != null ? `:v${String(opt.version)}` : '';
 
