@@ -12,16 +12,29 @@ jest.mock('../../providers/ForecastProvider', () => ({
   getDailyRange: (coords: any, startIso: any, endIso: any) => mockGetDailyRange(coords, startIso, endIso),
 }));
 
-// Use real computeRisk from HelperService
+// Mock repositories to make loader return test-controlled tasks
+// Important: do not capture out-of-scope variables in the factory
+jest.mock('../../repositories/instances', () => {
+  const getAll = jest.fn(() => []);
+  return {
+    taskRepository: { getAll },
+    authRepository: {
+      getCurrentUser: () => null,
+      login: () => {},
+      logout: () => {},
+    },
+  };
+});
 
-let fakeTasks: Task[] = [];
 
 function buildRequest(url: string) {
   return new Request(url);
 }
 
+// Helper to set tasks for current test on mocked repository
 function setTasks(tasks: Task[]) {
-  fakeTasks = tasks;
+  const instances = jest.requireMock('../../repositories/instances') as any;
+  (instances.taskRepository.getAll as jest.Mock).mockReturnValue(tasks);
 }
 
 describe('LoaderService.loader', () => {
@@ -39,6 +52,12 @@ describe('LoaderService.loader', () => {
   beforeEach(() => {
     mockGeocodeCity.mockReset();
     mockGetDailyRange.mockReset();
+    // reset tasks repo mock to default empty
+    const instances = jest.requireMock('../../repositories/instances') as any;
+    if (instances?.taskRepository?.getAll?.mockReset) {
+      instances.taskRepository.getAll.mockReset();
+      instances.taskRepository.getAll.mockReturnValue([]);
+    }
   });
 
   function expectedWeekStartEnd(week = 0) {
