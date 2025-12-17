@@ -1,6 +1,5 @@
 import { ActionFunctionArgs, LoaderFunctionArgs, redirect } from 'react-router-dom';
-import { store } from '../store';
-import { login, logout } from '../store/authSlice';
+import { authRepository } from '../repositories/instances';
 
 export async function loginAction({ request }: ActionFunctionArgs) {
   const url = new URL(request.url);
@@ -9,8 +8,8 @@ export async function loginAction({ request }: ActionFunctionArgs) {
   const username = String(fd.get('username') || '').trim();
   const password = String(fd.get('password') || '').trim();
 
-  store.dispatch(login({ username, password }));
-  const user = store.getState().auth.currentUser;
+  authRepository.login({ username, password });
+  const user = authRepository.getCurrentUser();
   if (!user) {
     return { error: 'Invalid username or password' };
   }
@@ -18,12 +17,12 @@ export async function loginAction({ request }: ActionFunctionArgs) {
 }
 
 export async function logoutAction() {
-  store.dispatch(logout());
+  authRepository.logout();
   return redirect('/');
 }
 
 export async function requireAuthLoader({ request }: LoaderFunctionArgs) {
-  const user = store.getState().auth.currentUser;
+  const user = authRepository.getCurrentUser();
   if (!user) {
     const url = new URL(request.url);
     const to = url.pathname + (url.search || '');
