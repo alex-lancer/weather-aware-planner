@@ -1,8 +1,6 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router-dom';
 import { redirect } from '../RouterShim';
 import type { Task, Role, Status } from '../types';
-import { store } from '../store';
-import { addTask, updateTask } from '../store/tasksSlice';
 import { computeRisk } from './HelperService';
 import { geocodeCity } from '../providers/NominatimProfider';
 import { getNextDays } from '../providers/ForecastProvider';
@@ -45,7 +43,7 @@ export async function newTaskAction({ request }: ActionFunctionArgs) {
   // create new id
   const createdId = (globalThis as any).crypto?.randomUUID?.() ?? ('t' + Math.random().toString(36).slice(2, 9));
   const created: Task = { ...t, id: createdId };
-  store.dispatch(addTask(created));
+  taskRepository.add(created);
   return redirect('/');
 }
 
@@ -85,8 +83,8 @@ export const editTaskAction = makeEditTaskAction({
 
 export async function taskLoader({ params }: LoaderFunctionArgs) {
   const id = params.id as string;
-  const state = store.getState();
-  const task = state.tasks.items.find((x: Task) => x.id === id);
+  const allTasks = taskRepository.getAll();
+  const task = allTasks.find((x: Task) => x.id === id);
   if (!task) {
     throw new Response('Not found', { status: 404 });
   }
