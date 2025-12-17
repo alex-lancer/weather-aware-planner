@@ -5,8 +5,6 @@ import { computeRisk } from './HelperService';
 import { geocodeCity } from '../providers/NominatimProfider';
 import { getNextDays } from '../providers/ForecastProvider';
 import { DEFAULT_COORDS } from '../types';
-import type { TaskRepository } from '../repositories/TaskRepository';
-import type { AuthRepository } from '../repositories/AuthRepository';
 import { authRepository, taskRepository } from '../repositories/instances';
 
 function parseTask(form: FormData, existingId?: string): Task {
@@ -47,39 +45,32 @@ export async function newTaskAction({ request }: ActionFunctionArgs) {
   return redirect('/');
 }
 
-function makeEditTaskAction(deps: { auth: AuthRepository; tasks: TaskRepository }) {
-  return async function editTaskAction({ request }: ActionFunctionArgs) {
-    const fd = await request.formData();
-    const id = String(fd.get('id') || '');
+export async function editTaskAction({ request }: ActionFunctionArgs) {
+  const fd = await request.formData();
+  const id = String(fd.get('id') || '');
 
-    if (!id) throw new Error('Missing id');
+  if (!id) throw new Error('Missing id');
 
-    const allTasks = deps.tasks.getAll();
-    const existing = allTasks.find((x: Task) => x.id === id);
+  const allTasks = taskRepository.getAll();
+  const existing = allTasks.find((x: Task) => x.id === id);
 
-    if (!existing) {
-      throw new Response('Not found', { status: 404 });
-    }
+  if (!existing) {
+    throw new Response('Not found', { status: 404 });
+  }
 
-    const t = parseTask(fd, id);
-    const currentUser = deps.auth.getCurrentUser();
-    let updated: Task;
-    if (currentUser?.role === 'technician') {
-      updated = { ...existing, status: t.status, notes: t.notes };
-    } else {
-      updated = { ...t, id };
-    }
+  const t = parseTask(fd, id);
+  const currentUser = authRepository.getCurrentUser();
+  let updated: Task;
+  if (currentUser?.role === 'technician') {
+    updated = { ...existing, status: t.status, notes: t.notes };
+  } else {
+    updated = { ...t, id };
+  }
 
-    deps.tasks.update(updated);
+  taskRepository.update(updated);
 
-    return redirect('/');
-  };
+  return redirect('/');
 }
-
-export const editTaskAction = makeEditTaskAction({
-  auth: authRepository,
-  tasks: taskRepository,
-});
 
 export async function taskLoader({ params }: LoaderFunctionArgs) {
   const id = params.id as string;
@@ -95,48 +86,38 @@ export async function taskLoader({ params }: LoaderFunctionArgs) {
  * Reschedule a task to the next acceptable-risk day for the given city.
  * Preference order: low risk first, then medium. If none found, keep as-is.
  */
-function makeRescheduleTaskAction(deps: {
-  auth: AuthRepository;
-  tasks: TaskRepository;
-}) {
-  return async function rescheduleTaskAction({ request, params }: ActionFunctionArgs) {
-    const id = params.id as string;
-    const fd = await request.formData();
+export async function rescheduleTaskAction({ request, params }: ActionFunctionArgs) {
+  const id = params.id as string;
+  const fd = await request.formData();
 
-    if (!id) throw new Error('Missing id');
+  if (!id) throw new Error('Missing id');
 
-    const currentUser = deps.auth.getCurrentUser();
-    if (!currentUser) {
-      return redirectToLogin(fd);
-    }
+  const currentUser = authRepository.getCurrentUser();
+  if (!currentUser) {
+    return redirectToLogin(fd);
+  }
 
-    const allTasks = deps.tasks.getAll();
-    const existing = allTasks.find((x: Task) => x.id === id);
-    if (!existing) throw new Response('Not found', { status: 404 });
+  const allTasks = taskRepository.getAll();
+  const existing = allTasks.find((x: Task) => x.id === id);
+  if (!existing) throw new Response('Not found', { status: 404 });
 
-    if (!canRescheduleTask(currentUser)) {
-      return redirectToDashboard(fd);
-    }
+  if (!canRescheduleTask(currentUser)) {
+    return redirectToDashboard(fd);
+  }
 
-    const { role, city, weekNum } = fetchDataFromForm(fd, existing);
-    const coords = (await geocodeCity(city)) || DEFAULT_COORDS;
+  const { role, city, weekNum } = fetchDataFromForm(fd, existing);
+  const coords = (await geocodeCity(city)) || DEFAULT_COORDS;
 
-    // Fetch 7-day forecast (starting today) via provider
-    const { risks, dates } = await getNextDaysRisks(coords);
-    const newDate = chooseBestDate(risks, dates);
-    if (newDate) {
-      const updated: Task = { ...existing, date: newDate };
-      deps.tasks.update(updated);
-    }
+  // Fetch 7-day forecast (starting today) via provider
+  const { risks, dates } = await getNextDaysRisks(coords);
+  const newDate = chooseBestDate(risks, dates);
+  if (newDate) {
+    const updated: Task = { ...existing, date: newDate };
+    taskRepository.update(updated);
+  }
 
-    return returnToDashboard(city, role, weekNum);
-  };
+  return returnToDashboard(city, role, weekNum);
 }
-
-export const rescheduleTaskAction = makeRescheduleTaskAction({
-  auth: authRepository,
-  tasks: taskRepository,
-});
 
 async function redirectToLogin(fdTmp: FormData) {
   const roleTmp = (fdTmp.get('role') as Role) || 'manager';

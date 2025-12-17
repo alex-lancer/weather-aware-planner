@@ -2,10 +2,9 @@ import { LoaderData, Task, DailyWeather, DEFAULT_CITY, DEFAULT_COORDS, Role } fr
 import { computeRisk } from "./HelperService";
 import { geocodeCity } from "../providers/NominatimProfider";
 import { getDailyRange } from "../providers/ForecastProvider";
-import { TaskRepository } from "../repositories/TaskRepository";
+import { taskRepository } from "../repositories/instances";
 
-export function makeLoader(repo: { tasks: TaskRepository }) {
-  return async function loader({ request }: { request: Request }): Promise<LoaderData> {
+export async function plannerLoader({ request }: { request: Request }): Promise<LoaderData> {
   const url = new URL(request.url);
   const role = (url.searchParams.get("role") as Role) || "manager";
   const city = url.searchParams.get("city") || DEFAULT_CITY;
@@ -16,7 +15,7 @@ export function makeLoader(repo: { tasks: TaskRepository }) {
 
   const days = await fetchDaysForCoords(coords, weekStartIso, weekEndIso);
 
-  const allTasks: Task[] = repo.tasks.getAll();
+  const allTasks: Task[] = taskRepository.getAll();
   const citiesInWeek = fetchCitiesInWeek(allTasks, weekStartIso);
 
   const entries = await Promise.all(
@@ -25,7 +24,6 @@ export function makeLoader(repo: { tasks: TaskRepository }) {
   const cityDays: Record<string, DailyWeather[]> = Object.fromEntries(entries);
 
   return { role, city, coords, days, tasks: allTasks, degraded, week, weekStart: weekStartIso, weekEnd: weekEndIso, cityDays };
-  };
 }
 
 
