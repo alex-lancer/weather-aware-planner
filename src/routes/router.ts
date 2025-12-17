@@ -1,6 +1,6 @@
 import React from 'react';
 import { createBrowserRouter, redirect } from 'react-router-dom';
-import Planner from 'components/Planner';
+import Planner from 'components/Planner/Planner';
 import NewTask from 'components/TaskEdit/NewTask';
 import EditTask from 'components/TaskEdit/EditTask';
 import { plannerLoader } from 'services/LoaderService';

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLoaderData } from 'react-router-dom';
 import TaskForm from './TaskForm';
-import type { Task } from '../../types';
+import type { Task } from 'types';
 
 export default function EditTask() {
   const task = useLoaderData() as Task;

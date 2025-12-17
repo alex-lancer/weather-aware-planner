@@ -1,5 +1,5 @@
 import { ActionFunctionArgs, LoaderFunctionArgs, redirect } from 'react-router-dom';
-import { authRepository } from '../repositories/instances';
+import { authRepository } from 'repositories/instances';
 
 export async function loginAction({ request }: ActionFunctionArgs) {
   const url = new URL(request.url);

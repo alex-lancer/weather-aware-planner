@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { AuthState, User } from '../types/auth';
+import type { AuthState, User } from 'types/auth';
 
 export const AUTH_STORAGE_KEY = 'waw.auth.v1';
 
