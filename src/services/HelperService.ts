@@ -1,21 +1,18 @@
-import { LoaderData, Task, DailyWeather, DEFAULT_CITY, DEFAULT_COORDS, Role } from "types";
-import tasks from "data/tasks.json";
-
-export function withTimeout<T>(p: Promise<T>, ms: number, signal?: AbortSignal): Promise<T> {
+export function withTimeout<T>(p: Promise<T>, ms: number, _signal?: AbortSignal): Promise<T> {
+  // Note: AbortSignal is accepted for potential future integration, but not used here.
   return new Promise((resolve, reject) => {
     const t = setTimeout(() => {
-      if (controller) controller.abort();
       reject(new Error("timeout"));
     }, ms);
-    const controller = signal ? undefined : new AbortController();
-    const s = signal ?? controller?.signal;
-    p.then((v) => {
-      clearTimeout(t);
-      resolve(v);
-    }).catch((e) => {
-      clearTimeout(t);
-      reject(e);
-    });
+    p
+      .then((v) => {
+        clearTimeout(t);
+        resolve(v);
+      })
+      .catch((e) => {
+        clearTimeout(t);
+        reject(e);
+      });
   });
 }
 

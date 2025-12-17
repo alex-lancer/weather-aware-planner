@@ -71,3 +71,27 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
+
+## Running with Docker
+
+This project includes a Docker setup to build a production bundle and serve it via Nginx.
+
+- Build and run with Docker:
+
+```bash
+docker build -t weather-aware:latest .
+docker run --rm -p 3000:80 weather-aware:latest
+# Open http://localhost:3000
+```
+
+- Or use docker-compose:
+
+```bash
+docker compose up --build
+# Open http://localhost:3000
+```
+
+Notes:
+- The image is built in two stages: Node (build) and Nginx (serve).
+- Nginx config includes SPA fallback routing (`try_files ... /index.html`).
+- Static assets are cached aggressively; rebuild the image to deploy new versions.

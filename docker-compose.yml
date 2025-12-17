@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  weather-aware:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80" # host:container
+    restart: unless-stopped
+    # No environment needed for CRA static build

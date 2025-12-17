@@ -1,0 +1,18 @@
+# Reduce Docker build context
+node_modules
+npm-debug.log*
+yarn-error.log*
+.git
+.gitignore
+.DS_Store
+build
+coverage
+.cache
+.vscode
+.idea
+**/Thumbs.db
+**/*.swp
+
+# Exclude test artifacts
+jest-cache
+jest-resolve-cache
