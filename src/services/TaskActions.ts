@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router-dom';
 import { redirect } from 'RouterShim';
 import type { Task, Role, Status } from 'types';
-import { computeRisk } from './HelperService';
+import { computeRisk } from 'utilities/Risk';
 import { geocodeCity } from 'providers/NominatimProfider';
 import { getNextDays } from 'providers/ForecastProvider';
 import { withRetry } from 'utilities/Retry';

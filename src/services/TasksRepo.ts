@@ -2,6 +2,10 @@ import seed from 'data/tasks.json';
 import type { Task } from 'types';
 import { STORAGE_KEY } from 'store/tasksSlice';
 
+//This module is a simple in-memory store for tasks.
+//It's used for demo purposes only.
+//In a real app, you would use a database or a REST API.
+//This module is not meant to be used in production.
 function reviveAndMigrate(items: any[]): Task[] {
   const today = new Date();
   function nextDateForWeekday(weekday: number): Date {

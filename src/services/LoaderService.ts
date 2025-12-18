@@ -1,5 +1,5 @@
 import { LoaderData, Task, DailyWeather, DEFAULT_CITY, DEFAULT_COORDS, Role } from "types";
-import { computeRisk } from "services/HelperService";
+import { computeRisk } from "utilities/Risk";
 import { geocodeCity } from "providers/NominatimProfider";
 import { getDailyRange } from "providers/ForecastProvider";
 import { withRetryFn } from "utilities/Retry";
