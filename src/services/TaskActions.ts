@@ -4,7 +4,7 @@ import type { Task, Role, Status } from 'types';
 import { computeRisk } from './HelperService';
 import { geocodeCity } from 'providers/NominatimProfider';
 import { getNextDays } from 'providers/ForecastProvider';
-import { withRetry } from 'services/Retry';
+import { withRetry } from 'utilities/Retry';
 import { DEFAULT_COORDS } from 'types';
 import { authRepository, taskRepository } from 'repositories/instances';
 

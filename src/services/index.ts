@@ -1,3 +1,4 @@
 export * from './LoaderService';
 export * from './HelperService';
-export * from './LocalCache';
+// Re-export utilities to keep backward compatibility for external imports
+export * from 'utilities';

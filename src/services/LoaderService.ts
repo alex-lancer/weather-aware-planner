@@ -2,8 +2,8 @@ import { LoaderData, Task, DailyWeather, DEFAULT_CITY, DEFAULT_COORDS, Role } fr
 import { computeRisk } from "services/HelperService";
 import { geocodeCity } from "providers/NominatimProfider";
 import { getDailyRange } from "providers/ForecastProvider";
-import { withRetryFn } from "services/Retry";
-import { cacheWithLocalStorage } from "services/LocalCache";
+import { withRetryFn } from "utilities/Retry";
+import { cacheWithLocalStorage } from "utilities/LocalCache";
 import { taskRepository } from "repositories/instances";
 import { defer } from "RouterShim";
 
