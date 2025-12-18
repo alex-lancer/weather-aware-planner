@@ -12,6 +12,12 @@ jest.mock('../../providers/ForecastProvider', () => ({
   getDailyRange: (coords: any, startIso: any, endIso: any) => mockGetDailyRange(coords, startIso, endIso),
 }));
 
+// Disable retry delays by mocking utilities/Retry to pass-through
+jest.mock('../../utilities/Retry', () => ({
+  withRetryFn: (fn: any) => (...args: any[]) => Promise.resolve(fn(...args)),
+  withRetry: (action: any) => Promise.resolve(action(1)),
+}));
+
 // Mock repositories to make loader return test-controlled tasks
 // Important: do not capture out-of-scope variables in the factory
 jest.mock('../../repositories/instances', () => {
@@ -57,6 +63,14 @@ describe('LoaderService.loader', () => {
     if (instances?.taskRepository?.getAll?.mockReset) {
       instances.taskRepository.getAll.mockReset();
       instances.taskRepository.getAll.mockReturnValue([]);
+    }
+    // Ensure request cache does not leak between tests
+    try {
+      if (typeof window !== 'undefined' && 'localStorage' in window && window.localStorage) {
+        window.localStorage.clear();
+      }
+    } catch {
+      // ignore
     }
   });
 
@@ -137,7 +151,11 @@ describe('LoaderService.loader', () => {
     mockGeocodeCity.mockResolvedValue({ lat: 47.6062, lon: -122.3321 });
     mockGetDailyRange.mockRejectedValue(new Error('boom'));
 
-    const res = await plannerLoader({ request: buildRequest('http://localhost/?week=0') });
+    // Start the loader first, then advance fake timers to let retry backoff resolve
+    const promise = plannerLoader({ request: buildRequest('http://localhost/?week=0') });
+    // Advance fake timers to allow retry backoff timers to elapse
+    jest.advanceTimersByTime(10_000);
+    const res = await promise;
     expect(res.days).toHaveLength(7);
     // Compute expected using the same approach as LoaderService fallback
     const startLocal = new Date(res.weekStart + 'T00:00:00');
