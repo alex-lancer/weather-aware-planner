@@ -1,7 +1,7 @@
 import { useLoaderData, useNavigation, Await } from "react-router-dom";
 import { Suspense } from "react";
 import { LoaderData, DailyWeather } from "types";
-import TaskCard from "components/TaskCard";
+import TaskCard from "components/Task/TaskCard";
 import PlannerHeader from "./PlannerHeader";
 import PlannerFooter from "./PlannerFooter";
 import PlannerCityTabs from "./PlannerCityTabs";

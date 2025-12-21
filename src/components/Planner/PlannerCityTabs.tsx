@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, KeyboardEvent } from 'react';
 import type { DailyWeather, Task } from 'types';
-import TaskCard from 'components/TaskCard';
+import TaskCard from 'components/Task/TaskCard';
 
 type Props = {
   cities: string[];
