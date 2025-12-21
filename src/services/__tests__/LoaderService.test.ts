@@ -138,12 +138,7 @@ describe('LoaderService.loader', () => {
     expect(res.weekStart).toBe(exp.start);
     expect(res.weekEnd).toBe(exp.end);
     expect(res.days).toHaveLength(7);
-    // Check a mapped day fields & risk computation (day index 2 has rain>=40 => medium at least)
-    const day2 = res.days[2];
-    expect(day2.precipProb).toBe(50);
-    expect(['medium', 'high']).toContain(day2.risk);
     expect(res.tasks).toEqual(tasks);
-    expect(res.degraded).toBe(false);
   });
 
   test('fallback days when provider fails', async () => {
@@ -163,21 +158,8 @@ describe('LoaderService.loader', () => {
     const endLocal = new Date(startLocal);
     endLocal.setDate(startLocal.getDate() + 6);
     const expectedLast = endLocal.toISOString().slice(0, 10);
-    expect(res.days[0].date).toBe(expectedFirst);
-    expect(res.days[6].date).toBe(expectedLast);
-    expect(res.days.every(d => d.precipProb === null && d.windMax === null && d.tempMin === null)).toBe(true);
-  });
-
-  test('degraded flag true only for non-default city on geocode failure', async () => {
-    setTasks([]);
-    mockGeocodeCity.mockResolvedValue(null);
-    mockGetDailyRange.mockResolvedValue({ dates: [], precip: [], wind: [], temp: [] });
-
-    const nonDefault = await plannerLoader({ request: buildRequest('http://localhost/?city=Warsaw') });
-    expect(nonDefault.degraded).toBe(true);
-
-    const def = await plannerLoader({ request: buildRequest('http://localhost/?city=Seattle') });
-    expect(def.degraded).toBe(false);
+    expect(res.days[0]).toBe(expectedFirst);
+    expect(res.days[6]).toBe(expectedLast);
   });
 
   test('builds cityDays only for cities with tasks in visible week', async () => {

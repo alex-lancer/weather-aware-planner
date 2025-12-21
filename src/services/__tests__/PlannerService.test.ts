@@ -13,9 +13,9 @@ describe('PlannerService', () => {
 
   test('groupTasksByDateCity groups only tasks within visible days by iso and city', () => {
     const days = [
-      makeDay('2025-12-15'),
-      makeDay('2025-12-16'),
-      makeDay('2025-12-17'),
+      '2025-12-15',
+      '2025-12-16',
+      '2025-12-17',
     ];
     const tasks: Task[] = [
       { id: 'a', title: 'A', role: 'technician', city: 'Seattle', durationHours: 1, date: new Date('2025-12-15T00:00:00'), status: 'ToDo' },
@@ -35,7 +35,10 @@ describe('PlannerService', () => {
   });
 
   test('deriveCitiesForVisibleWeek returns sorted unique cities with tasks in visible days', () => {
-    const days = [makeDay('2025-12-15'), makeDay('2025-12-16')];
+    const days = [
+      '2025-12-15',
+      '2025-12-16'
+    ];
     const tasks: Task[] = [
       { id: 'a', title: 'A', role: 'technician', city: 'Seattle', durationHours: 1, date: new Date('2025-12-15T00:00:00'), status: 'ToDo' },
       { id: 'b', title: 'B', role: 'technician', city: 'Denver', durationHours: 1, date: new Date('2025-12-16T00:00:00'), status: 'ToDo' },
