@@ -4,7 +4,7 @@ import TaskCard from 'components/Task/TaskCard';
 
 type Props = {
   cities: string[];
-  days: DailyWeather[];
+  days: string[];
   grouped: Map<string, Map<string, Task[]>>; // iso -> city -> tasks
   week: number;
   isSubmitting: boolean;
@@ -97,11 +97,13 @@ export default function PlannerCityTabs({ cities, days, grouped, week, isSubmitt
           id={`tabpanel-${active}`}
           aria-labelledby={`tab-${active}`}
         >
-          {(cityDays?.[active] ?? days).map((d) => {
-            const dayCityTasks = grouped.get(d.date)?.get(active) ?? [];
+          {(cityDays?.[active])?.map((d) => {
+            const day = (d as DailyWeather).date;
+            const dayCityTasks = grouped.get(day)?.get(active) ?? [];
+
             return (
               <TaskCard
-                key={d.date + '::' + active}
+                key={day + '::' + active}
                 day={d}
                 tasks={dayCityTasks}
                 week={week}

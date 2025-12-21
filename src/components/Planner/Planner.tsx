@@ -10,8 +10,8 @@ import PlannerSkeleton from "./PlannerSkeleton";
 
 export default function Planner() {
   const data = useLoaderData() as any as LoaderData & { cityDays: any };
-  const { city, coords, days, tasks, degraded, week, weekStart, weekEnd } = data as LoaderData;
-  const cityDaysDeferred = (data as any).cityDays as Promise<Record<string, DailyWeather[]>> | Record<string, DailyWeather[]>;
+  const { days, tasks, week, weekStart, weekEnd } = data as LoaderData;
+  const cityDaysDeferred = (data as any).cityDays as Promise<Record<string, DailyWeather[]>>;
   const nav = useNavigation();
   const isSubmitting = nav.state === "submitting" || nav.state === "loading";
 
@@ -23,9 +23,6 @@ export default function Planner() {
   return (
     <main id="main-content" className="pt-6 pb-20 px-4 max-w-3xl mx-auto" aria-busy={isSubmitting}>
       <PlannerHeader
-        city={city}
-        coords={coords}
-        degraded={degraded}
         week={week}
         weekStart={weekStart}
         weekEnd={weekEnd}
@@ -58,7 +55,7 @@ export default function Planner() {
                       <div key={c} className="">
                         <div className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{c}</div>
                         <section className="grid grid-cols-7 gap-3 min-w-[980px]">
-                          {(cityDays?.[c] ?? days).map((d: DailyWeather) => {
+                          {(cityDays?.[c]).map((d: DailyWeather) => {
                             const dayCityTasks = grouped.get(d.date)?.get(c) ?? [];
                             return (
                               <TaskCard

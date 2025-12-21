@@ -35,7 +35,6 @@ export default function Login() {
         </BaseButton>
       </Form>
       <p className="mt-3 text-xs text-gray-600">Demo users: manager1/2/3, dispatcher1/2/3, technician1/2/3. Password: pass123</p>
-      <p className="mt-3 text-xs"><Link className="text-blue-700 hover:underline" to="/">Back to planner</Link></p>
     </div>
   );
 }

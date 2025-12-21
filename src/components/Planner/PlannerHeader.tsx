@@ -3,15 +3,12 @@ import { useAppSelector } from "store";
 import BaseButton from "commonComponents/BaseButton";
 
 type Props = {
-  city: string;
-  coords: { lat: number; lon: number };
-  degraded: boolean;
   week: number;
   weekStart: string; // ISO yyyy-mm-dd (Monday)
   weekEnd: string;   // ISO yyyy-mm-dd (Sunday)
 };
 
-export default function PlannerHeader({ city, coords, degraded, week, weekStart, weekEnd }: Props) {
+export default function PlannerHeader({ week, weekStart, weekEnd }: Props) {
   const currentUser = useAppSelector((s) => s.auth.currentUser);
   return (
     <header className="flex flex-col gap-3 mb-4">
@@ -40,13 +37,9 @@ export default function PlannerHeader({ city, coords, degraded, week, weekStart,
         </div>
       </div>
       <div className="text-xs text-gray-600 dark:text-gray-400">
-        {degraded ? (
-          <p>Using fallback data due to slow network or API limits. Try again later.</p>
-        ) : (
-          <p>
-            Showing 7-day outlook for {city} ({coords.lat.toFixed(2)}, {coords.lon.toFixed(2)}).
-          </p>
-        )}
+        <p>
+          Showing 7-day outlook.
+        </p>
       </div>
       {/* Week navigation toolbar */}
       <div className="flex items-center justify-between gap-3 mt-2">
