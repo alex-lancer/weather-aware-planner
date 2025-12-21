@@ -1,6 +1,7 @@
 // NominatimProfider: OpenStreetMap Nominatim geocoding and search utilities
+import type { GeocodeCity, SearchCities } from "types";
 
-export async function geocodeCity(city: string): Promise<{ lat: number; lon: number } | null> {
+export const geocodeCity: GeocodeCity = async (city: string) => {
   try {
     const url = new URL("https://nominatim.openstreetmap.org/search");
     url.searchParams.set("format", "json");
@@ -16,13 +17,13 @@ export async function geocodeCity(city: string): Promise<{ lat: number; lon: num
   } catch {
     return null;
   }
-}
+};
 
 /**
  * Search city suggestions using OpenStreetMap Nominatim.
  * Returns up to 5 display names.
  */
-export async function searchCities(query: string): Promise<string[]> {
+export const searchCities: SearchCities = async (query: string) => {
   if (!query.trim()) return [];
   try {
     const url = new URL("https://nominatim.openstreetmap.org/search");
@@ -49,4 +50,4 @@ export async function searchCities(query: string): Promise<string[]> {
   } catch {
     return [];
   }
-}
+};
