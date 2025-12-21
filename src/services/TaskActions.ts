@@ -30,7 +30,7 @@ function parseTask(form: FormData, existingId?: string): Task {
     title,
     description,
     role,
-    date,
+    date: date.toISOString(),
     durationHours,
     city,
     status,
@@ -118,8 +118,9 @@ export async function rescheduleTaskAction({ request, params }: ActionFunctionAr
   // Fetch 7-day forecast (starting today) via provider
   const { risks, dates } = await getNextDaysRisks(coords);
   const newDate = chooseBestDate(risks, dates);
+
   if (newDate) {
-    const updated: Task = { ...existing, date: newDate };
+    const updated: Task = { ...existing, date: newDate.toISOString() };
     taskRepository.update(updated);
   }
 

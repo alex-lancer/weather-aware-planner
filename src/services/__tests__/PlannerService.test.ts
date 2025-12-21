@@ -97,7 +97,7 @@ describe('LoaderService.loader', () => {
         role: 'technician',
         city: 'Seattle',
         durationHours: 2,
-        date: new Date('2025-12-15T00:00:00'),
+        date: '2025-12-15T00:00:00.000Z',
         status: 'ToDo',
       },
       {
@@ -106,7 +106,7 @@ describe('LoaderService.loader', () => {
         role: 'technician',
         city: 'Denver',
         durationHours: 3,
-        date: new Date('2025-12-16T00:00:00'),
+        date: '2025-12-16T00:00:00.000Z',
         status: 'ToDo',
       },
     ];
@@ -165,10 +165,10 @@ describe('LoaderService.loader', () => {
   test('builds cityDays only for cities with tasks in visible week', async () => {
     const tasks: Task[] = [
       // In week (Mon 15..Sun 21)
-      { id: 'a', title: 'A', role: 'technician', city: 'Seattle', durationHours: 1, date: new Date('2025-12-15T00:00:00'), status: 'ToDo' },
-      { id: 'b', title: 'B', role: 'technician', city: 'Denver', durationHours: 1, date: new Date('2025-12-16T00:00:00'), status: 'ToDo' },
+      { id: 'a', title: 'A', role: 'technician', city: 'Seattle', durationHours: 1, date: '2025-12-15T00:00:00.000Z', status: 'ToDo' },
+      { id: 'b', title: 'B', role: 'technician', city: 'Denver', durationHours: 1, date: '2025-12-16T00:00:00.000Z', status: 'ToDo' },
       // Outside week
-      { id: 'c', title: 'C', role: 'technician', city: 'London', durationHours: 1, date: new Date('2026-01-10T00:00:00'), status: 'ToDo' },
+      { id: 'c', title: 'C', role: 'technician', city: 'London', durationHours: 1, date: '2026-01-10T00:00:00.000Z', status: 'ToDo' },
     ];
     setTasks(tasks);
 

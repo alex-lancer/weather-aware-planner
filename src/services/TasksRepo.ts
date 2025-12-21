@@ -30,7 +30,7 @@ function reviveAndMigrate(items: any[]): Task[] {
       role: it.role,
       city: String(it.city || ''),
       durationHours: Number(it.durationHours || 1),
-      date,
+      date: date.toISOString(),
       status: (it.status === 'InProgress' || it.status === 'Done') ? it.status : 'ToDo',
       notes: it.notes ? String(it.notes) : undefined,
     };

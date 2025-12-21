@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, Form } from "react-router-dom";
 import BaseButton from "commonComponents/BaseButton";
 import type { Task } from "types";
 import { useAppSelector } from "store";
@@ -34,12 +34,12 @@ export default function TaskListItem({ task, week, isSubmitting, className }: Ta
       </div>
       <span className="text-xs text-gray-500 whitespace-nowrap">{task.durationHours}h</span>
       {canReschedule && (
-        <form method="post" action={`/dashboard/task/${task.id}/reschedule`} className="ml-2">
+        <Form method="post" action={`/dashboard/task/${task.id}/reschedule`} className="ml-2">
           <input type="hidden" name="week" value={String(week)} />
           <BaseButton type="submit" size="sm" variant="secondary" disabled={isSubmitting}>
             {isSubmitting ? "…" : "R"}
           </BaseButton>
-        </form>
+        </Form>
       )}
     </li>
   );

@@ -104,7 +104,7 @@ describe('TaskActions', () => {
     test('returns task by id or 404', async () => {
       const t: Task = {
         id: 't1', title: 'A', role: 'technician', city: 'Seattle', durationHours: 1,
-        date: new Date('2025-12-15T00:00:00'), status: 'ToDo',
+        date: '2025-12-15T00:00:00.000Z', status: 'ToDo',
       };
       mockGetState.mockReturnValue({ tasks: { items: [t] }, auth: { currentUser: { role: 'manager' } } });
       const found = await taskLoader({ params: { id: 't1' } as any, request: {} as any, context: {} as any });
@@ -118,7 +118,7 @@ describe('TaskActions', () => {
     test('manager updates full task', async () => {
       const existing: Task = {
         id: 't1', title: 'Old', role: 'technician', city: 'Seattle', durationHours: 1,
-        date: new Date('2025-12-15T00:00:00'), status: 'ToDo',
+        date: '2025-12-15T00:00:00.000Z', status: 'ToDo',
       };
       mockGetState.mockReturnValue({ tasks: { items: [existing] }, auth: { currentUser: { role: 'manager' } } });
       const fd = buildForm({
@@ -135,7 +135,7 @@ describe('TaskActions', () => {
     test('technician updates only status and notes', async () => {
       const existing: Task = {
         id: 't2', title: 'Keep', role: 'technician', city: 'Seattle', durationHours: 2,
-        date: new Date('2025-12-16T00:00:00'), status: 'ToDo',
+        date: '2025-12-16T00:00:00.000Z', status: 'ToDo',
       };
       mockGetState.mockReturnValue({ tasks: { items: [existing] }, auth: { currentUser: { role: 'technician' } } });
       const fd = buildForm({
@@ -166,7 +166,7 @@ describe('TaskActions', () => {
         role: 'technician',
         city: 'Seattle',
         durationHours: 1,
-        date: new Date('2025-12-15T00:00:00'),
+        date: '2025-12-15T00:00:00.000Z',
         status: 'ToDo',
       };
       const task = { ...base, ...overrides } as Task;
