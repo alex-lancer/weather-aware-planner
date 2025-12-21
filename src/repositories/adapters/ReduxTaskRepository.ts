@@ -8,6 +8,10 @@ export class ReduxTaskRepository implements TaskRepository {
     return store.getState().tasks.items as Task[];
   }
 
+  get(id: string): Task | undefined {
+    return this.getAll().find((t) => t.id === id);
+  }
+
   add(task: Task): void {
     store.dispatch(addTask(task));
   }

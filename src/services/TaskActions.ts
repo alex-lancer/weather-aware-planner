@@ -55,8 +55,7 @@ export async function editTaskAction({ request }: ActionFunctionArgs) {
 
   if (!id) throw new Error('Missing id');
 
-  const allTasks = taskRepository.getAll();
-  const existing = allTasks.find((x: Task) => x.id === id);
+  const existing = taskRepository.get(id);
 
   if (!existing) {
     throw new Response('Not found', { status: 404 });
@@ -79,8 +78,7 @@ export async function editTaskAction({ request }: ActionFunctionArgs) {
 
 export async function taskLoader({ params }: LoaderFunctionArgs) {
   const id = params.id as string;
-  const allTasks = taskRepository.getAll();
-  const task = allTasks.find((x: Task) => x.id === id);
+  const task = taskRepository.get(id);
 
   if (!task) {
     throw new Response('Not found', { status: 404 });
@@ -104,8 +102,7 @@ export async function rescheduleTaskAction({ request, params }: ActionFunctionAr
     return redirectToLogin(fd);
   }
 
-  const allTasks = taskRepository.getAll();
-  const existing = allTasks.find((x: Task) => x.id === id);
+  const existing = taskRepository.get(id);
   if (!existing) throw new Response('Not found', { status: 404 });
 
   if (!canRescheduleTask(currentUser)) {
