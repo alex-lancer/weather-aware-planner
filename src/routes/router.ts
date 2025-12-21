@@ -3,7 +3,7 @@ import { createBrowserRouter, redirect } from 'react-router-dom';
 import Planner from 'components/Planner/Planner';
 import NewTask from 'components/TaskEdit/NewTask';
 import EditTask from 'components/TaskEdit/EditTask';
-import { plannerLoader } from 'services/LoaderService';
+import { plannerLoader } from 'services/PlannerService';
 import { newTaskAction, editTaskAction, taskLoader, rescheduleTaskAction } from 'services/TaskActions';
 import Login from 'components/Login';
 import { loginAction, logoutAction, requireAuthLoader } from 'services/AuthActions';

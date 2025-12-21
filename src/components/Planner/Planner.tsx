@@ -5,7 +5,7 @@ import TaskCard from "components/Task/TaskCard";
 import PlannerHeader from "./PlannerHeader";
 import PlannerFooter from "./PlannerFooter";
 import PlannerCityTabs from "./PlannerCityTabs";
-import { deriveCitiesForVisibleWeek, groupTasksByDateCity } from "services/PlannerService";
+import { deriveCitiesForVisibleWeek, groupTasksByDateCity } from 'utilities/Planner';
 import PlannerSkeleton from "./PlannerSkeleton";
 
 export default function Planner() {
