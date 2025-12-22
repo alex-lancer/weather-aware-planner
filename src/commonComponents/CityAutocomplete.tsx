@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useRef, useEffect, useId, KeyboardEvent, InputHTMLAttributes, ChangeEvent } from 'react';
 import { searchCities } from 'providers/NominatimProfider';
 
-export interface CityAutocompleteProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface CityAutocompleteProps extends InputHTMLAttributes<HTMLInputElement> {
   name: string;
   defaultValue?: string;
 }
@@ -23,16 +23,16 @@ export default function CityAutocomplete({
   id,
   ...rest
 }: CityAutocompleteProps) {
-  const [value, setValue] = React.useState<string>(defaultValue);
-  const [open, setOpen] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
-  const [items, setItems] = React.useState<Suggestion[]>([]);
-  const [highlight, setHighlight] = React.useState<number>(-1);
+  const [value, setValue] = useState<string>(defaultValue);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState<Suggestion[]>([]);
+  const [highlight, setHighlight] = useState<number>(-1);
 
-  const abortRef = React.useRef<AbortController | null>(null);
-  const rootRef = React.useRef<HTMLDivElement | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const rootRef = useRef<HTMLDivElement | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Debounced fetch
     if (!value.trim()) {
       setItems([]);
@@ -67,7 +67,7 @@ export default function CityAutocomplete({
     return () => clearTimeout(t);
   }, [value]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     function handleDocClick(e: MouseEvent) {
       if (!rootRef.current) return;
       if (!rootRef.current.contains(e.target as Node)) {
@@ -85,7 +85,7 @@ export default function CityAutocomplete({
     setHighlight(-1);
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (onKeyDown) onKeyDown(e);
     if (!open && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
       setOpen(items.length > 0);
@@ -109,14 +109,14 @@ export default function CityAutocomplete({
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setValue(e.target.value);
     if (onChange) onChange(e);
   };
 
   const inputClasses = [baseInputClass, className].filter(Boolean).join(' ');
-  const listboxId = React.useId();
-  const autoId = React.useId();
+  const listboxId = useId();
+  const autoId = useId();
   const inputId = id ?? autoId;
 
   return (
