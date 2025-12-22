@@ -71,6 +71,7 @@ async function fetchDaysForCoords(
         windMax: wind[i] ?? null,
         tempMin: temp[i] ?? null,
       };
+
       return { ...d, risk: computeRisk({ precip: d.precipProb, wind: d.windMax, temp: d.tempMin }) };
     });
   } catch {
